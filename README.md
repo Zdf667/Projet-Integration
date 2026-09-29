@@ -2,7 +2,7 @@
 
 Machine à cocktail automatique pilotée par une page web en Wi-Fi. Quatre récipients contiennent chacun un liquide, une pompe péristaltique par récipient dose les ingrédients, et la machine propose uniquement les cocktails réalisables avec les ingrédients présents.
 
-> Projet d'intégration : voir le [cahier des charges](CAHIER_DES_CHARGES.md) pour le détail des exigences.
+> Projet d'intégration : voir le [cahier des charges](https://github.com/Zdf667/Projet-Integration/wiki/Cahier-des-charges) pour le détail des exigences.
 
 ## Principe de fonctionnement
 
