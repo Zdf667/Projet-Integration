@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cocktail Mix</title>
+  <link rel="stylesheet" href="CSS/style.css">
+</head>
+<body>
+  <!-- Ronds décoratifs -->
+  <div class="rond rond-rouge"></div>
+  <div class="rond rond-bleu"></div>
+  <div class="rond rond-vert"></div>
+
+  <main class="page">
+    <header class="entete">
+      <div class="logo"><span class="logo-icone">✦</span> Cocktail Mix</div>
+      <span class="badge">100% SANS ALCOOL</span>
+    </header>
+
+    <!-- ÉCRAN 1 : la liste des cocktails -->
+    <section id="ecran-liste">
+      <p class="petit-titre">LE BAR SOFT EST OUVERT</p>
+      <h1>Compose ta pause fraîche.</h1>
+      <p class="intro">
+        Choisis ton mix préféré, découvre les ingrédients et laisse la magie opérer.<br>
+        Simple, frais, prêt pour la prochaine soirée.
+      </p>
+      <div class="titre-liste">
+        <h2>Tu bois quoi ce soir ?</h2>
+        <span class="compteur">6 mix à tester</span>
+      </div>
+      <div id="liste" class="liste"></div>
+    </section>
+
+    <!-- ÉCRAN 2 : le cocktail choisi -->
+    <section id="ecran-choix" class="cache">
+      <div id="carte-choix" class="grande-carte">
+        <button id="bouton-changer" class="lien-retour">← Changer de mix</button>
+        <p class="ton-choix">TON CHOIX</p>
+        <h1 id="choix-nom"></h1>
+        <h2>Ingrédients</h2>
+        <ul id="choix-ingredients" class="ingredients"></ul>
+        <button id="bouton-preparer" class="gros-bouton noir">Préparer le cocktail</button>
+      </div>
+    </section>
+
+    <!-- ÉCRAN 3 : animation + chargement -->
+    <section id="ecran-mixage" class="cache">
+      <div class="grande-carte creme">
+        <p class="ton-choix">MINUTE MIXOLOGIE</p>
+
+        <!-- Le verre -->
+        <div class="zone-verre">
+        <div class="verre">
+          <div id="liquide" class="liquide"></div>
+          <span class="bulle b1"></span>
+          <span class="bulle b2"></span>
+          <span class="bulle b3"></span>
+        </div>
+        <div class="paille"></div>
+        </div>
+
+        <h2 id="mixage-titre">Ça mixe, ça pétille...</h2>
+        <p id="mixage-texte" class="texte-centre">Ton verre se remplit de bonne humeur. Encore une petite seconde !</p>
+        <button id="bouton-retour" class="gros-bouton rouge cache">Retour</button>
+      </div>
+    </section>
+
+    <footer class="pied">Cocktail Mix — des boissons fraîches, zéro alcool, 100 % bonne ambiance.</footer>
+  </main>
+
+  <script src="JS/script.js"></script>
+</body>
+</html>
