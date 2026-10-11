@@ -1,11 +1,11 @@
 // 1. Les cocktails. "point" = couleur des ronds, "liquide" = couleur du verre
 const cocktails = [
-  { nom: "Grenadine plate", icone: "🍹", couleur: "#ff9a98", point: "#e8334f", liquide: "linear-gradient(#ff8a8a, #ff5a6e)", description: "Douce, rouge et toute simple.", ingredients: ["Sirop de grenadine", "Eau plate"] },
-  { nom: "Grenadine soda", icone: "🧋", couleur: "#ffdd57", point: "#e8334f", liquide: "linear-gradient(#ff8a8a, #ff5a6e)", description: "Le même fruité, avec des bulles.", ingredients: ["Sirop de grenadine", "Eau gazeuse"] },
-  { nom: "Menthe plate", icone: "🧃", couleur: "#74e0c4", point: "#1fa37f", liquide: "linear-gradient(#6ee7c4, #2bbd96)", description: "Un splash frais et tout doux.", ingredients: ["Sirop de menthe", "Eau plate"] },
-  { nom: "Menthe soda", icone: "🍸", couleur: "#74b8ff", point: "#1fa37f", liquide: "linear-gradient(#6ee7c4, #2bbd96)", description: "Fraîcheur maximale, bulles incluses.", ingredients: ["Sirop de menthe", "Eau gazeuse"] },
-  { nom: "Eau gazeuse", icone: "🫧", couleur: "#ddd6ff", point: "#6a5acd", liquide: "linear-gradient(#c9c2ff, #8f84f0)", description: "La pause pétillante par excellence.", ingredients: ["Eau gazeuse"] },
-  { nom: "Eau plate", icone: "💧", couleur: "#fff8e6", point: "#3f8ee8", liquide: "linear-gradient(#a8d4ff, #5aa5f0)", description: "Simple, pure, toujours une bonne idée.", ingredients: ["Eau plate"] }
+  { nom: "Grenadine plate", icone: "🍹", couleur: "#b35451", point: "#640603", liquide: "linear-gradient(#ff8a8a, #b35451)", description: "Douce, rouge et toute simple.", ingredients: ["Sirop de grenadine", "Eau plate"] },
+  { nom: "Grenadine soda", icone: "🧋", couleur: "#bd403c", point: "#b30b05", liquide: "linear-gradient(#ff8a8a, #bd403c)", description: "Le même fruité, avec des bulles.", ingredients: ["Sirop de grenadine", "Eau gazeuse"] },
+  { nom: "Menthe plate", icone: "🧃", couleur: "#74e0c4", point: "#118163", liquide: "linear-gradient(#6ee7c4, #74e0c4)", description: "Un splash frais et tout doux.", ingredients: ["Sirop de menthe", "Eau plate"] },
+  { nom: "Menthe soda", icone: "🍸", couleur: "#0b7e5f", point: "#1fa37f", liquide: "linear-gradient(#6ee7c4, #0b7e5f)", description: "Fraîcheur maximale, bulles incluses.", ingredients: ["Sirop de menthe", "Eau gazeuse"] },
+  { nom: "Eau gazeuse", icone: "🫧", couleur: "#764e8d", point: "#6a5acd", liquide: "linear-gradient(#c9c2ff, #764e8d)", description: "La pause pétillante par excellence.", ingredients: ["Eau gazeuse"] },
+  { nom: "Eau plate", icone: "💧", couleur: "#465a8f", point: "#3f8ee8", liquide: "linear-gradient(#a8d4ff, #465a8f)", description: "Simple, pure, toujours une bonne idée.", ingredients: ["Eau plate"] }
 ];
 
 // 2. On récupère les éléments de la page
