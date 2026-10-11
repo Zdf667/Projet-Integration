@@ -12,7 +12,14 @@ Machine à cocktail automatique pilotée par une page web en Wi-Fi. Quatre réci
 4. La machine enchaîne les pompes selon la recette. L'avancement s'affiche sur la page web et une LED d'état indique l'état de la machine.
 5. Quand le verre est prêt, la page le signale et donne un conseil de service (ex. ajouter une tranche de citron ou un glaçon).
 
-Il n'y a **aucun écran ni commande sur la machine**, hormis la LED d'état et le bouton d'arrêt d'urgence. Un seul appareil est connecté à la fois.
+Il n'y a **aucun écran ni commande sur la machine**, hormis la LED d'état et le bouton d'arrêt d'urgence. Un seul appareil est connecté à la fois.  
+
+## Logo et slogan  
+Nous avons essayé de faire un logo ainsi qu'un slogan qui parle à tout le monde, c'est pourquoi nous avons choisi de les faire en référence aux animés/mangas.  
+logo et slogan:  
+
+<img width="2752" height="1536" alt="image" src="https://github.com/user-attachments/assets/226253c9-73fb-4d62-b971-09eda9df2b9b" />
+
 
 ## Modes
 
@@ -105,8 +112,13 @@ Projet-Integration/
 ## Équipe
 
 | Nom | Rôle |
-|---|---|
-| *à compléter* | |
+|-----|------|
+| CHARLIER Thomas | |
+| AMQRANE Sofiane | |
+| HAULET Nicolas  | |
+| SCHWEICHER Cyril| |
+| GOKALP Daniel   | |
+
 
 ## Points à décider
 
