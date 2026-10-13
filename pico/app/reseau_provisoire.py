@@ -9,8 +9,7 @@ import time
 
 import network
 
-import config
-import storage
+from app import config, storage
 
 
 def _point_acces():
@@ -30,7 +29,7 @@ def demarrer():
     except Exception:
         pass
 
-    cfg = storage.lire_json(config.chemin(config.FICHIER_WIFI), None)
+    cfg = storage.lire_json(config.trouver_data(config.FICHIER_WIFI), None)
     if isinstance(cfg, dict) and cfg.get("ssid"):
         sta = network.WLAN(network.STA_IF)
         sta.active(True)

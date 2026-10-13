@@ -7,8 +7,7 @@
 #  - la configuration est sauvegardée dans config.json et survit à un redémarrage.
 #
 # Le récipient n est branché sur la pompe n : récipient 1 = index 0 = pompe 1.
-import config
-import storage
+from app import config, storage
 
 VERSION = 1
 
@@ -38,7 +37,7 @@ def valider(recipients, connus):
 
 def charger():
     """Liste de 4 éléments (ingrédient ou None). Par défaut : 4 récipients vides."""
-    donnees = storage.lire_json(config.chemin(config.FICHIER_CONFIG), None)
+    donnees = storage.lire_json(config.trouver_data(config.FICHIER_CONFIG), None)
     if isinstance(donnees, dict):
         liste = donnees.get("recipients")
         if isinstance(liste, list) and len(liste) == config.NB_RECIPIENTS:
@@ -50,7 +49,7 @@ def enregistrer(recipients, connus):
     """Valide puis sauvegarde. Renvoie la liste nettoyée. Lève ValueError si refusé."""
     valider(recipients, connus)
     propre = [_nettoyer(x) for x in recipients]
-    storage.ecrire_json(config.chemin(config.FICHIER_CONFIG), {"version": VERSION, "recipients": propre})
+    storage.ecrire_json(config.chemin_data(config.FICHIER_CONFIG), {"version": VERSION, "recipients": propre})
     return propre
 
 

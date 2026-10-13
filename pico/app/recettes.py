@@ -10,8 +10,7 @@
 #      "conseil": ["Glaçons", "Tranche d'orange"]}          <- ingrédients NON liquides (pas de pompe)
 #   ]
 # }
-import config
-import storage
+from app import config, storage
 
 ML_MAX = 500          # garde-fou : une recette ne verse pas plus de 500 ml d'un seul ingrédient
 MAX_PAR_RECETTE = config.NB_RECIPIENTS   # 4 pompes = 4 ingrédients au maximum par recette
@@ -103,7 +102,7 @@ def realisables(donnees, recipients):
 
 def charger():
     """Charge et valide recettes.json. Lève ValueError / OSError si le fichier est absent ou faux."""
-    donnees = storage.lire_json(config.chemin(config.FICHIER_RECETTES), None)
+    donnees = storage.lire_json(config.trouver_data(config.FICHIER_RECETTES), None)
     if donnees is None:
         raise ValueError("recettes.json absent ou illisible")
     return valider(donnees)

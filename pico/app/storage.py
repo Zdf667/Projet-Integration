@@ -26,7 +26,18 @@ def lire_json(chemin, defaut=None):
         return defaut
 
 
+def _creer_dossier(chemin):
+    """Crée le dossier qui contiendra le fichier (data/ au premier enregistrement)."""
+    dossier = chemin.rpartition("/")[0]
+    if dossier:
+        try:
+            os.mkdir(dossier)
+        except OSError:
+            pass          # existe déjà
+
+
 def ecrire_json(chemin, donnees):
+    _creer_dossier(chemin)
     tmp = chemin + ".tmp"
     with _ouvrir(tmp, "w") as f:
         json.dump(donnees, f)

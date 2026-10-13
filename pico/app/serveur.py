@@ -3,19 +3,26 @@
 #   GET  /                 MODE UTILISATEUR : contenu des 4 récipients + cocktails réalisables
 #   GET  /admin            MODE ADMINISTRATEUR : choix de l'ingrédient de chaque récipient + recettes chargées
 #   POST /ingredients      enregistre les 4 récipients (refuse un doublon ou un ingrédient inconnu)
+#   GET  /static/<nom>     style.css, logo.png, favicon.png (dossier web/)
 #   GET  /api/ingredients  {"recipients": [...], "connus": [...]}
-#   GET  /api/recettes     contenu de recettes.json
+#   GET  /api/recettes     contenu de data/recettes.json
 #
 # Le mode administrateur n'est PAS protégé par un PIN (US4.3 est remplacée par US1.2 pour l'instant) :
-# n'importe qui sur le réseau de la machine peut ouvrir /admin.
+# n'importe qui sur le réseau de la machine peut ouvrir /admin. Le HTML est dans pages.py.
 import asyncio
 import json
+import os
 
-import config
-import ingredients
-import recettes
+from app import config, ingredients, pages, recettes
 
 _etat = {"data": None, "erreur": None}   # contenu validé de recettes.json, ou message d'erreur
+
+# Seuls ces fichiers de web/ sont servis (liste fermée : pas de lecture d'un autre fichier de la Pico).
+_STATIQUE = {
+    "style.css": "text/css; charset=utf-8",
+    "logo.png": "image/png",
+    "favicon.png": "image/png",
+}
 
 
 def _charger_recettes():
@@ -32,12 +39,7 @@ def _connus():
     return _etat["data"]["ingredients"] if _etat["data"] else []
 
 
-# --- petits outils (MicroPython n'a ni html ni urllib.parse) ---------------------------------
-def _e(texte):
-    return (str(texte).replace("&", "&amp;").replace("<", "&lt;")
-            .replace(">", "&gt;").replace('"', "&quot;"))
-
-
+# --- petits outils (MicroPython n'a pas urllib.parse) ----------------------------------------
 def _decoder(s):
     s = s.replace("+", " ")
     octets = bytearray()
@@ -67,92 +69,6 @@ def _parse_form(corps):
     return champs
 
 
-# --- pages HTML ------------------------------------------------------------------------------
-_STYLE = ("body{font-family:sans-serif;max-width:34rem;margin:1rem auto;padding:0 1rem}"
-          "nav{display:flex;gap:.5rem;margin:1rem 0}"
-          "nav a{flex:1;text-align:center;padding:.6rem;border:2px solid #36c;border-radius:.4rem;"
-          "text-decoration:none;color:#36c;font-weight:bold}"
-          "nav a.actif{background:#36c;color:#fff}"
-          "label{display:block;margin-top:.8rem}select,button{font-size:1rem;padding:.4rem;width:100%}"
-          ".ok{background:#d9f2d9;padding:.5rem}.err{background:#f7d4d4;padding:.5rem}"
-          ".vide{color:#777}ul{padding-left:1.2rem}li{margin:.4rem 0}small{color:#555}")
-
-
-def _haut(mode, message=None, erreur=None):
-    """En-tête commun : titre, onglets Utilisateur / Administrateur, messages."""
-    h = ["<!doctype html><html lang=\"fr\"><head><meta charset=\"utf-8\">"
-         "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
-         "<title>Machine à cocktail</title><style>", _STYLE, "</style></head><body>",
-         "<h1>Machine à cocktail</h1><nav>"
-         "<a href=\"/\"", " class=\"actif\"" if mode == "user" else "", ">Mode utilisateur</a>"
-         "<a href=\"/admin\"", " class=\"actif\"" if mode == "admin" else "", ">Mode administrateur</a></nav>"]
-    if message:
-        h.append("<p class=\"ok\">" + _e(message) + "</p>")
-    if erreur:
-        h.append("<p class=\"err\">" + _e(erreur) + "</p>")
-    if _etat["erreur"]:
-        h.append("<p class=\"err\">recettes.json inutilisable : " + _e(_etat["erreur"]) + "</p>")
-    return h
-
-
-def _detail(recette):
-    return ", ".join("{} {} ml".format(x["ingredient"], x["ml"]) for x in recette["ingredients"])
-
-
-def _page_utilisateur():
-    recipients = ingredients.charger()
-    h = _haut("user")
-
-    h.append("<h2>Contenu des récipients</h2><ul>")
-    for i, nom in enumerate(recipients):
-        contenu = "<b>" + _e(nom) + "</b>" if nom else "<span class=\"vide\">vide</span>"
-        h.append("<li>Récipient {} : {}</li>".format(i + 1, contenu))
-    h.append("</ul>")
-
-    if _etat["data"]:
-        possibles = recettes.realisables(_etat["data"], recipients)
-        h.append("<h2>Cocktails réalisables ({})</h2>".format(len(possibles)))
-        if not any(recipients):
-            h.append("<p class=\"vide\">Aucun ingrédient chargé. Passez en mode administrateur pour remplir les récipients.</p>")
-        elif not possibles:
-            h.append("<p class=\"vide\">Aucun cocktail réalisable avec ces ingrédients.</p>")
-        else:
-            h.append("<ul>")
-            for r in possibles:
-                ligne = "<li><b>" + _e(r["nom"]) + "</b><br>" + _e(_detail(r))
-                if r.get("conseil"):
-                    ligne += "<br><small>À ajouter : " + _e(", ".join(r["conseil"])) + "</small>"
-                h.append(ligne + "</li>")
-            h.append("</ul>")
-    h.append("</body></html>")
-    return "".join(h)
-
-
-def _page_admin(selection, erreur=None, message=None):
-    h = _haut("admin", message, erreur)
-    h.append("<h2>Ingrédients des récipients</h2>")
-    if _etat["data"]:
-        h.append("<form method=\"post\" action=\"/ingredients\">")
-        for i in range(config.NB_RECIPIENTS):
-            actuel = selection[i] if i < len(selection) else None
-            h.append("<label>Récipient {0}<select name=\"r{0}\"><option value=\"\">— vide —</option>".format(i + 1))
-            for nom in _connus():
-                coche = " selected" if nom == actuel else ""
-                h.append("<option value=\"" + _e(nom) + "\"" + coche + ">" + _e(nom) + "</option>")
-            h.append("</select></label>")
-        h.append("<button style=\"margin-top:1rem\">Enregistrer</button></form>")
-
-        h.append("<h2>Recettes chargées ({})</h2><ul>".format(len(_etat["data"]["recettes"])))
-        for r in _etat["data"]["recettes"]:
-            ligne = "<li><b>" + _e(r["nom"]) + "</b> : " + _e(_detail(r))
-            if r.get("conseil"):
-                ligne += "<br><small>À ajouter : " + _e(", ".join(r["conseil"])) + "</small>"
-            h.append(ligne + "</li>")
-        h.append("</ul>")
-    h.append("</body></html>")
-    return "".join(h)
-
-
 # --- HTTP ------------------------------------------------------------------------------------
 _RAISONS = {200: "OK", 303: "See Other", 400: "Bad Request", 404: "Not Found", 405: "Method Not Allowed"}
 
@@ -169,6 +85,27 @@ async def _repondre(w, code, corps, type_="text/html; charset=utf-8", extra=""):
 
 async def _json(w, objet):
     await _repondre(w, 200, json.dumps(objet), "application/json; charset=utf-8")
+
+
+async def _envoyer_fichier(w, nom):
+    """Envoie un fichier de web/ par blocs de 1 Ko (le logo ne tient pas d'un coup dans la mémoire)."""
+    chemin = config.chemin(config.DOSSIER_WEB + nom)
+    try:
+        taille = os.stat(chemin)[6]
+        f = open(chemin, "rb")
+    except OSError:
+        return await _repondre(w, 404, "Introuvable")
+    try:
+        w.write(("HTTP/1.1 200 OK\r\nContent-Type: {}\r\nContent-Length: {}\r\nConnection: close\r\n"
+                 "Cache-Control: public, max-age=300\r\n\r\n").format(_STATIQUE[nom], taille).encode())
+        while True:
+            bloc = f.read(1024)
+            if not bloc:
+                break
+            w.write(bloc)
+            await w.drain()
+    finally:
+        f.close()
 
 
 async def _lire(reader):
@@ -198,7 +135,7 @@ async def _router(w, methode, cible, corps):
     if chemin == "/":
         if methode != "GET":
             return await _repondre(w, 405, "Méthode non autorisée")
-        return await _repondre(w, 200, _page_utilisateur())
+        return await _repondre(w, 200, pages.page_utilisateur(ingredients.charger(), _etat["data"], _etat["erreur"]))
 
     if chemin == "/admin":
         if methode != "GET":
@@ -208,7 +145,7 @@ async def _router(w, methode, cible, corps):
         if "ok=1" in requete:
             n = len(recettes.realisables(_etat["data"], recipients)) if _etat["data"] else 0
             message = "Configuration enregistrée : {} cocktail(s) réalisable(s).".format(n)
-        return await _repondre(w, 200, _page_admin(recipients, message=message))
+        return await _repondre(w, 200, pages.page_admin(recipients, _etat["data"], _etat["erreur"], message=message))
 
     if chemin == "/ingredients":
         if methode != "POST":
@@ -218,8 +155,11 @@ async def _router(w, methode, cible, corps):
         try:
             ingredients.enregistrer(choix, _connus())
         except ValueError as e:
-            return await _repondre(w, 400, _page_admin(choix, erreur=str(e)))
+            return await _repondre(w, 400, pages.page_admin(choix, _etat["data"], _etat["erreur"], erreur=str(e)))
         return await _repondre(w, 303, "", extra="Location: /admin?ok=1\r\n")
+
+    if chemin.startswith("/static/") and methode == "GET" and chemin[8:] in _STATIQUE:
+        return await _envoyer_fichier(w, chemin[8:])
 
     if chemin == "/api/ingredients" and methode == "GET":
         return await _json(w, {"recipients": ingredients.charger(), "connus": _connus()})
