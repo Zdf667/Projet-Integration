@@ -105,8 +105,8 @@ Projet-Integration/
 - [x] Issues créées dans GitHub et ajoutées au board
 - [x] Liste du matériel établie
 - [ ] Schémas (architecture, hydraulique, électrique)
-- [ ] Commande du matériel
-- [ ] Banc de test d'une pompe
+- [x] Commande du matériel
+- [x] Banc de test d'une pompe
 - [ ] Firmware et page web
 
 ## Équipe
