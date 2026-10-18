@@ -1,0 +1,122 @@
+# ============================================================
+# Projet One Cocktail (Pico W + MicroPython) : macOS, Windows, Python
+# ============================================================
+
+# --- Secrets et réglages locaux (NE JAMAIS publier) ---
+data/wifi.json          # mot de passe Wi-Fi en clair
+data/config.json        # créé par la machine (contenu des récipients)
+.env
+.env.*
+*.pem
+*.key
+secrets.*
+
+# --- macOS ---
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+Icon?
+
+# --- Windows ---
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+*.stackdump
+[Dd]esktop.ini
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Environnements virtuels
+.venv/
+venv/
+env/
+ENV/
+
+# Tests et couverture
+.pytest_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+.cache/
+.hypothesis/
+coverage.xml
+
+# Typage, lint
+.mypy_cache/
+.ruff_cache/
+.pytype/
+.pyre/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# --- MicroPython / Pico ---
+*.uf2                   # firmware MicroPython (gros fichier, à télécharger)
+*.mpy
+mpremote_cache/
+.thonny/
+
+# --- Éditeurs et IDE ---
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.sublime-workspace
+*.sublime-project
+*.swp
+*.swo
+*~
+\#*\#
+
+# --- Fichiers temporaires et logs ---
+*.log
+*.tmp
+*.bak
+*.orig
+*.rej
+tmp/
+temp/
+
+# --- Archives et exports locaux ---
+*.zip
+*.tar
+*.tar.gz
+*.7z
+*.rar
