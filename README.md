@@ -44,9 +44,9 @@ Le nettoyage est guidé par une série d'instructions à l'écran (ex. mettre de
 
 | Élément | Quantité |
 |---|---|
-| Raspberry Pi Pico W (Wi-Fi, serveur web, pilotage) | 1 |
+| Raspberry Pi Pico 2 W (Wi-Fi, serveur web, pilotage) | 1 |
 | Pompe péristaltique 12 V DC | 4 |
-| Module 4 canaux MOSFET (compatible 3,3 V) + 4 diodes de roue libre | 1 |
+| Module 4 relais à optocoupleurs (5 V, commandé à 0 V) + 4 diodes de roue libre 1N4007 | 1 |
 | Alimentation 12 V, 3 à 5 A + convertisseur 12 V vers 5 V | 1 |
 | Tuyau silicone alimentaire, raccords | environ 5 m |
 | Récipients 0,5 à 1 L | 4 |
@@ -69,8 +69,8 @@ Budget estimé : environ 135 à 250 €. La liste détaillée figure dans le cah
   └───────┬────────┘
           │ GPIO (3,3 V)
   ┌───────▼────────┐
-  │ Module MOSFET  │◄── 12 V ◄── Fusible ◄── Arrêt d'urgence ◄── Alim 12 V
-  │ (4 canaux)     │
+  │ Module 4 relais│◄── 12 V ◄── Fusible ◄── Arrêt d'urgence ◄── Alim 12 V
+  │ (optocoupleurs)│
   └─┬───┬───┬───┬──┘
    P1  P2  P3  P4        (pompes péristaltiques)
     │   │   │   │

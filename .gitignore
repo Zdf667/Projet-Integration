@@ -3,8 +3,12 @@
 # ============================================================
 
 # --- Secrets et réglages locaux (NE JAMAIS publier) ---
-data/wifi.json          # mot de passe Wi-Fi en clair
-data/config.json        # créé par la machine (contenu des récipients)
+# mot de passe Wi-Fi en clair
+**/data/wifi.json
+# code PIN admin choisi par le groupe
+**/data/admin.json
+# créé par la machine (contenu des récipients)
+**/data/config.json
 .env
 .env.*
 *.pem
@@ -89,7 +93,8 @@ coverage.xml
 .ipynb_checkpoints/
 
 # --- MicroPython / Pico ---
-*.uf2                   # firmware MicroPython (gros fichier, à télécharger)
+# firmware MicroPython (gros fichier, à télécharger)
+*.uf2
 *.mpy
 mpremote_cache/
 .thonny/
