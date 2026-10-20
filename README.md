@@ -9,10 +9,10 @@ Machine à cocktail automatique pilotée par une page web en Wi-Fi. Quatre réci
 1. L'administrateur ouvre la page web (mode admin, protégé par un code PIN) et enregistre l'ingrédient présent dans chacun des 4 récipients.
 2. La page affiche automatiquement les cocktails réalisables avec ces 4 ingrédients.
 3. L'utilisateur (mode user) choisit un cocktail, confirme, puis lance la préparation depuis son téléphone.
-4. La machine enchaîne les pompes selon la recette. L'avancement s'affiche sur la page web et une LED d'état indique l'état de la machine.
+4. La machine enchaîne les pompes selon la recette. L'avancement s'affiche sur la page web et un ruban de 26 LED indique l'état de la machine.
 5. Quand le verre est prêt, la page le signale et donne un conseil de service (ex. ajouter une tranche de citron ou un glaçon).
 
-Il n'y a **aucun écran ni commande sur la machine**, hormis la LED d'état et le bouton d'arrêt d'urgence. Un seul appareil est connecté à la fois.  
+Il n'y a **aucun écran ni commande sur la machine**, hormis le ruban de LED d'état et le bouton d'arrêt d'urgence. Un seul appareil est connecté à la fois.  
 
 ## Logo et slogan  
 Nous avons essayé de faire un logo ainsi qu'un slogan qui parle à tout le monde, c'est pourquoi nous avons choisi de les faire en référence aux animés/mangas.  
@@ -30,9 +30,9 @@ logo et slogan:
 
 Le nettoyage est guidé par une série d'instructions à l'écran (ex. mettre de l'eau chaude dans un grand récipient, y plonger les tuyaux, confirmer), puis les 4 lignes sont rincées.
 
-## LED d'état
+## Ruban de LED d'état
 
-| État | LED (proposition) |
+| État | Ruban de 26 LED (proposition) |
 |---|---|
 | Prête | Vert fixe |
 | Préparation en cours | Orange clignotant |
@@ -50,7 +50,7 @@ Le nettoyage est guidé par une série d'instructions à l'écran (ex. mettre de
 | Alimentation 12 V, 3 à 5 A + convertisseur 12 V vers 5 V | 1 |
 | Tuyau silicone alimentaire, raccords | environ 5 m |
 | Récipients 0,5 à 1 L | 4 |
-| LED RGB + résistances | 1 |
+| Ruban de 26 LED adressables WS2812 (5 V) + résistance 330 Ω + condensateur 1000 µF | 1 |
 | Bouton d'arrêt d'urgence (contact NF) + fusible 5 A | 1 |
 | Boîtier étanche pour l'électronique, bac de rétention, structure | 1 lot |
 | *Bonus* : cellule de charge + module HX711 (détection du verre) | 1 |
@@ -63,7 +63,7 @@ Budget estimé : environ 135 à 250 €. La liste détaillée figure dans le cah
   Téléphone (page web)
           │  Wi-Fi
   ┌───────▼────────┐        ┌────────────┐
-  │   Pico W       │───────►│ LED d'état │
+  │   Pico W       │───────►│ Ruban LED  │
   │ serveur web +  │        └────────────┘
   │ logique        │
   └───────┬────────┘
