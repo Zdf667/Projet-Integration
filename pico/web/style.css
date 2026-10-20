@@ -1,0 +1,268 @@
+/* One Cocktail : planche de BD (contours épais, ombres décalées) dans les couleurs du logo.
+   Aucune police ni image externe : la page doit marcher sans internet (Pico en point d'accès). */
+
+:root {
+  --encre: #17213b;
+  --ciel: #dcefff;
+  --points: #b3d5f4;
+  --bleu: #1a6fe6;
+  --orange: #ff8a1f;
+  --jaune: #ffd43b;
+  --vert: #38c98d;
+  --sourdine: #4a5876;
+  /* couleur des récipients 1 à 4 */
+  --c0: var(--bleu);
+  --c1: var(--orange);
+  --c2: var(--jaune);
+  --c3: var(--vert);
+  --titre: "Arial Black", "Avenir Next Condensed", "Helvetica Neue", Arial, sans-serif;
+  --texte: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: radial-gradient(circle, var(--points) 1.3px, transparent 1.7px) 0 0 / 16px 16px, var(--ciel);
+  color: var(--encre);
+  font: 1rem/1.5 var(--texte);
+}
+
+main { max-width: 34rem; margin: 0 auto; padding: 1rem 1rem 3rem; }
+
+:focus-visible { outline: 3px solid var(--orange); outline-offset: 3px; }
+a { color: var(--bleu); font-weight: 700; }
+
+/* --- logo ------------------------------------------------------------------------------- */
+.logo {
+  background: #fff;
+  border: 3px solid var(--encre);
+  border-radius: 18px;
+  box-shadow: 5px 5px 0 var(--encre);
+  padding: .5rem;
+}
+.logo img { display: block; width: min(100%, 11.5rem); height: auto; margin: 0 auto; }
+
+/* --- onglets : mode utilisateur / mode administrateur ----------------------------------- */
+nav { display: flex; gap: .7rem; margin: 1.3rem 0 .4rem; }
+nav a {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: .7rem .4rem;
+  text-align: center;
+  text-decoration: none;
+  background: #fff;
+  color: var(--encre);
+  border: 3px solid var(--encre);
+  border-radius: 12px;
+  box-shadow: 3px 3px 0 var(--encre);
+  font: 900 italic .95rem/1.2 var(--titre);
+}
+nav a[aria-current="page"] { background: var(--bleu); color: #fff; }
+nav a:active, button:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--encre); }
+
+/* --- titres ------------------------------------------------------------------------------ */
+h2 { margin: 1.7rem 0 .8rem; font: 900 italic 1.3rem/1.2 var(--titre); }
+h3 { margin: 0; font: 900 italic 1.1rem/1.2 var(--titre); }
+
+/* --- messages ---------------------------------------------------------------------------- */
+.msg, .alerte, .indice {
+  margin: 1rem 0 0;
+  padding: .7rem .9rem;
+  border: 3px solid var(--encre);
+  border-radius: 12px;
+  font-weight: 600;
+}
+.msg.ok { background: #c9f3dd; }
+.msg.err { background: #ffd6d6; }
+.alerte { background: var(--jaune); }
+.indice { border-style: dashed; background: rgba(255, 255, 255, .7); font-weight: 400; }
+
+/* --- les 4 récipients -------------------------------------------------------------------- */
+.cuves { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; margin: 0; padding: 0; list-style: none; }
+.cuve {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+  min-height: 5.2rem;
+  padding: .55rem .75rem .7rem;
+  background: #fff;
+  border: 3px solid var(--encre);
+  border-top: 12px solid var(--encre);
+  border-radius: 12px;
+  box-shadow: 3px 3px 0 var(--encre);
+}
+.cuve .num { font-size: .8rem; font-weight: 700; color: var(--sourdine); }
+.cuve b { font: 900 italic 1.05rem/1.25 var(--titre); }
+.cuve.c0 { border-top-color: var(--c0); }
+.cuve.c1 { border-top-color: var(--c1); }
+.cuve.c2 { border-top-color: var(--c2); }
+.cuve.c3 { border-top-color: var(--c3); }
+.cuve.vide {
+  background: rgba(255, 255, 255, .55);
+  border-style: dashed;
+  border-top-width: 3px;
+  box-shadow: none;
+  color: var(--sourdine);
+}
+
+/* --- cocktails réalisables --------------------------------------------------------------- */
+.carte {
+  margin: 0 0 1rem;
+  padding: .8rem .9rem .9rem;
+  background: #fff;
+  border: 3px solid var(--encre);
+  border-radius: 14px;
+  box-shadow: 4px 4px 0 var(--encre);
+}
+.carte header { display: flex; justify-content: space-between; align-items: baseline; gap: .6rem; margin-bottom: .6rem; }
+.total { font-size: .85rem; font-weight: 700; color: var(--sourdine); white-space: nowrap; }
+
+.doses { display: flex; flex-wrap: wrap; gap: .4rem; margin: 0; padding: 0; list-style: none; }
+.dose {
+  display: inline-flex;
+  gap: .4rem;
+  align-items: baseline;
+  padding: .25rem .7rem;
+  border: 2px solid var(--encre);
+  border-radius: 999px;
+  font-size: .92rem;
+}
+.dose.c0 { background: var(--c0); color: #fff; }
+.dose.c1 { background: var(--c1); }
+.dose.c2 { background: var(--c2); }
+.dose.c3 { background: var(--c3); }
+
+.garniture {
+  margin: .75rem 0 0;
+  padding: .4rem .7rem;
+  background: #fff6ea;
+  border: 2px dashed var(--orange);
+  border-radius: 10px;
+  font-size: .9rem;
+}
+
+/* --- mode administrateur ----------------------------------------------------------------- */
+.formulaire {
+  display: grid;
+  gap: .9rem;
+  padding: 1rem;
+  background: #fff;
+  border: 3px solid var(--encre);
+  border-radius: 14px;
+  box-shadow: 4px 4px 0 var(--encre);
+}
+.champ { display: grid; gap: .3rem; padding-left: .7rem; border-left: 10px solid var(--encre); font-weight: 700; }
+.champ.c0 { border-left-color: var(--c0); }
+.champ.c1 { border-left-color: var(--c1); }
+.champ.c2 { border-left-color: var(--c2); }
+.champ.c3 { border-left-color: var(--c3); }
+
+select {
+  width: 100%;
+  padding: .6rem .5rem;
+  background: #fff;
+  color: inherit;
+  border: 3px solid var(--encre);
+  border-radius: 10px;
+  font: inherit;
+  font-weight: 400;
+}
+
+button {
+  width: 100%;
+  padding: .8rem 1rem;
+  background: var(--orange);
+  color: var(--encre);
+  border: 3px solid var(--encre);
+  border-radius: 12px;
+  box-shadow: 3px 3px 0 var(--encre);
+  font: 900 italic 1.05rem/1.2 var(--titre);
+  cursor: pointer;
+}
+
+.recette {
+  margin: 0 0 .6rem;
+  padding: .15rem .85rem;
+  background: #fff;
+  border: 3px solid var(--encre);
+  border-radius: 12px;
+}
+.recette summary { display: flex; gap: .6rem; align-items: baseline; padding: .55rem 0; cursor: pointer; list-style: none; }
+.recette summary::-webkit-details-marker { display: none; }
+.recette summary b { flex: 1; }
+.recette summary::after { content: "+"; font: 900 1.2rem/1 var(--titre); }
+.recette[open] summary::after { content: "\2212"; }
+.recette p { margin: .2rem 0 .7rem; }
+.recette .garniture { margin-top: 0; }
+
+@media (min-width: 30rem) {
+  .formulaire { grid-template-columns: 1fr 1fr; }
+  .formulaire button { grid-column: 1 / -1; }
+}
+
+/* --- Sprint 3 : boutons-liens, suivi de préparation, menu admin, champs texte ------------------ */
+.bouton {
+  display: block;
+  margin-top: .8rem;
+  padding: .7rem 1rem;
+  background: var(--orange);
+  color: var(--encre);
+  border: 3px solid var(--encre);
+  border-radius: 12px;
+  box-shadow: 3px 3px 0 var(--encre);
+  font: 900 italic 1.05rem/1.2 var(--titre);
+  text-align: center;
+  text-decoration: none;
+}
+.bouton:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--encre); }
+.bouton.clair, button.clair { background: #fff; }
+button.danger { background: #ff6b6b; }
+form + form, form + p, p + form { margin-top: .9rem; }
+
+input[type="text"], input[type="password"] {
+  width: 100%;
+  padding: .6rem .5rem;
+  background: #fff;
+  color: inherit;
+  border: 3px solid var(--encre);
+  border-radius: 10px;
+  font: inherit;
+  font-weight: 400;
+}
+
+nav.sous { margin: .3rem 0 .4rem; flex-wrap: wrap; gap: .5rem; }
+nav.sous a { padding: .35rem .7rem; font-size: .85rem; background: #fff; }
+
+.suivi { display: flex; align-items: center; gap: .8rem; margin-top: 1rem; }
+progress {
+  flex: 1;
+  height: 1.6rem;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 3px solid var(--encre);
+  border-radius: 999px;
+  background: #fff;
+  overflow: hidden;
+}
+progress::-webkit-progress-bar { background: #fff; }
+progress::-webkit-progress-value { background: var(--vert); }
+progress::-moz-progress-bar { background: var(--vert); }
+.grand { font: 900 italic 1.6rem/1.2 var(--titre); text-align: center; }
+
+/* --- réseaux Wi-Fi enregistrés ---------------------------------------------------------------- */
+form.reseau {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  margin: 0 0 .6rem;
+  padding: .5rem .7rem;
+  background: #fff;
+  border: 3px solid var(--encre);
+  border-radius: 12px;
+}
+form.reseau span { flex: 1; font-weight: 700; overflow-wrap: anywhere; }
+form.reseau button { width: auto; padding: .4rem .8rem; font-size: .9rem; }
