@@ -152,7 +152,7 @@ async def test_sequenceur(data):
 
 
 def test_admin():
-    verifie(admin.pin_actuel() == "1234", "PIN par défaut")
+    verifie(admin.pin_correct("1234"), "PIN par défaut")
     try:
         admin.connecter("0000")
         verifie(False, "mauvais PIN")
@@ -187,7 +187,7 @@ def test_admin():
         except ValueError:
             verifie(True, "")
     admin.definir_pin("4321", "4321")
-    verifie(admin.pin_actuel() == "4321", "nouveau PIN enregistré")
+    verifie(admin.pin_correct("4321") and not admin.pin_correct("1234") and "4321" not in open(config.chemin_data(config.FICHIER_ADMIN)).read(), "nouveau PIN enregistré")
     admin.definir_pin("1234", "1234")
 
 

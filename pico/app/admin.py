@@ -4,7 +4,10 @@
 #  - la session est un jeton aléatoire envoyé dans un cookie ;
 #  - après config.DELAI_INACTIVITE_S sans action, retour au mode utilisateur ;
 #  - après config.ESSAIS_MAX erreurs de PIN, blocage pendant config.BLOCAGE_S secondes.
-# Le PIN est dans data/admin.json (changeable depuis le mode administrateur), sinon PIN_ADMIN_DEFAUT.
+# Le PIN n'est jamais stocké en clair : data/admin.json contient un sel aléatoire (16 octets)
+# et l'empreinte SHA-256 de sel + PIN, répétée ITERATIONS fois. Sans fichier : PIN_ADMIN_DEFAUT.
+# Un ancien fichier {"pin": "1234"} est encore accepté puis converti en empreinte à la connexion.
+import hashlib
 import os
 
 from app import config, horloge, storage
@@ -13,11 +16,39 @@ _session = {"jeton": None, "dernier": 0}
 _echecs = {"n": 0, "jusqua": None}
 
 
-def pin_actuel():
-    donnees = storage.lire_json(config.trouver_data(config.FICHIER_ADMIN), None)
-    if isinstance(donnees, dict) and isinstance(donnees.get("pin"), str) and donnees["pin"]:
-        return donnees["pin"]
-    return config.PIN_ADMIN_DEFAUT
+ITERATIONS = 1000
+
+
+def _hex(octets):
+    return "".join("{:02x}".format(o) for o in octets)
+
+
+def _empreinte(pin, sel_hex, iterations):
+    h = hashlib.sha256(bytes.fromhex(sel_hex) + str(pin).encode()).digest()
+    for _ in range(iterations - 1):
+        h = hashlib.sha256(h + bytes.fromhex(sel_hex)).digest()
+    return _hex(h)
+
+
+def _enregistrer(pin):
+    sel = _hex(os.urandom(16))
+    storage.ecrire_json(config.chemin_data(config.FICHIER_ADMIN),
+                        {"sel": sel, "iter": ITERATIONS, "hash": _empreinte(pin, sel, ITERATIONS)})
+
+
+def pin_correct(pin):
+    """True si le PIN saisi est le bon (empreinte, ancien format clair, ou code par défaut)."""
+    pin = str(pin)
+    d = storage.lire_json(config.trouver_data(config.FICHIER_ADMIN), None)
+    if isinstance(d, dict):
+        if isinstance(d.get("hash"), str) and isinstance(d.get("sel"), str):
+            return _egal(_empreinte(pin, d["sel"], int(d.get("iter", ITERATIONS))), d["hash"])
+        if isinstance(d.get("pin"), str) and d["pin"]:
+            if _egal(pin, d["pin"]):
+                _enregistrer(pin)  # migration : on remplace le clair par une empreinte
+                return True
+            return False
+    return _egal(pin, config.PIN_ADMIN_DEFAUT)
 
 
 def pin_valide(pin):
@@ -29,7 +60,7 @@ def definir_pin(nouveau, confirmation):
         raise ValueError("Les deux codes ne sont pas identiques.")
     if not pin_valide(nouveau):
         raise ValueError("Le code doit contenir 4 à 8 chiffres.")
-    storage.ecrire_json(config.chemin_data(config.FICHIER_ADMIN), {"pin": nouveau})
+    _enregistrer(nouveau)
 
 
 def _egal(a, b):
@@ -62,7 +93,7 @@ def connecter(pin):
     reste = secondes_de_blocage()
     if reste:
         raise ValueError("Trop d'essais. Réessayez dans {} s.".format(reste))
-    if not _egal(str(pin), pin_actuel()):
+    if not pin_correct(pin):
         _echecs["n"] += 1
         if _echecs["n"] >= config.ESSAIS_MAX:
             _echecs["jusqua"] = horloge.ms() + config.BLOCAGE_S * 1000
