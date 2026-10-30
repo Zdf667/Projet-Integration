@@ -316,6 +316,25 @@ async def test_web(data):
     verifie(w.code() == 303, "session fermée")
 
 
+def test_dns():
+    import struct
+    from app import dns
+    print("-- DNS (nom de la machine)")
+
+    def question(nom, type_):
+        tete = b"\x12\x34\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00"
+        corps = b"".join(bytes([len(p)]) + p.encode() for p in nom.split(".")) + b"\x00"
+        return tete + corps + struct.pack(">HH", type_, 1)
+
+    for nom in ("cocktail.local", "cocktail.box", "n-importe-quoi.com"):
+        r = dns.reponse(question(nom, 1), "192.168.4.1")
+        verifie(r[-4:] == bytes([192, 168, 4, 1]) and r[:2] == b"\x12\x34" and r[7] == 1, "DNS : " + nom + " -> 192.168.4.1")
+    r = dns.reponse(question("cocktail.local", 28), "192.168.4.1")
+    verifie(r[7] == 0 and r[3] & 15 == 0, "DNS : demande IPv6 -> réponse vide sans erreur")
+    verifie(dns.reponse(b"abc", "192.168.4.1") is None, "DNS : paquet trop court ignoré")
+    verifie(dns.reponse(r, "192.168.4.1") is None, "DNS : une réponse n'est pas traitée comme une question")
+
+
 def test_conseil():
     verifie(conseil.texte(["Glaçons", "Menthe"]) == "Glaçons, Menthe" and conseil.texte([]) == "", "texte du conseil")
     verifie(conseil.html([]) == "" and "Glaçons" in conseil.html(["Glaçons"]), "encadré du conseil")
@@ -338,6 +357,7 @@ async def principal():
     await test_sequenceur(data)
     test_admin()
     test_reseau()
+    test_dns()
     test_led()
     test_conseil()
     test_pages()
