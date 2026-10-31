@@ -37,4 +37,4 @@ def page_nettoyage(etape, etat, erreur=None):
     else:
         h.append('<a class="bouton" href="/admin">Terminer</a>')
     h.append('</section>')
-    return fin(h)
+    return fin(h) 
