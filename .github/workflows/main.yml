@@ -1,8 +1,9 @@
 name: Tests
 
 on:
+  workflow_dispatch:
   push:
-    paths: ["pico/**"]
+    paths: ["pico/**", ".github/workflows/tests.yml"]
   pull_request:
     paths: ["pico/**"]
 
