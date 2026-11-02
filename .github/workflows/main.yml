@@ -1,0 +1,19 @@
+name: Tests
+
+on:
+  push:
+    paths: ["pico/**"]
+  pull_request:
+    paths: ["pico/**"]
+
+jobs:
+  tests-pc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Tests sur PC (faux matériel)
+        working-directory: pico
+        run: python3 tests/test_sur_pc.py
