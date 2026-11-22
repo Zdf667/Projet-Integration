@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OneCocktail - L'Aventure de la Mixologie</title>
+    <title>OneCocktail - Le Trésor de la Mixologie Automatisée</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -11,8 +11,8 @@
             theme: {
                 extend: {
                     colors: {
-                        gold: { DEFAULT: '#d4af37', hover: '#b5952f' },
-                        dark: { DEFAULT: '#0a0a0a', card: '#141414' }
+                        gold: { DEFAULT: '#d4af37', hover: '#b5952f', light: '#f3e5ab' },
+                        dark: { DEFAULT: '#0a0a0a', card: '#141414', border: '#262626' }
                     }
                 }
             }
@@ -20,274 +20,171 @@
     </script>
     <link rel="stylesheet" href="./style.css">
 </head>
-<body class="antialiased min-h-screen flex flex-col relative overflow-x-hidden">
+<body class="antialiased min-h-screen flex flex-col relative overflow-x-hidden bg-[#0a0a0a] text-gray-100">
 
-    <!-- Navbar -->
-    <nav class="fixed w-full z-50 glass-effect border-b-0 border-gold/20">
+    <!-- Halo décoratif en arrière-plan -->
+    <div class="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gold/10 blur-[120px] rounded-full pointer-events-none -z-10"></div>
+
+    <!-- Barre de Navigation -->
+    <nav class="fixed w-full z-50 glass-effect border-b border-gold/20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-20">
-                <div class="flex items-center gap-4 cursor-pointer" onclick="changerOnglet('accueil')">
+                <a href="./index.html" class="flex items-center gap-4">
                     <img src="./assets/logo.png" alt="OneCocktail Logo" class="h-12 w-auto logo-glow">
-                    <span class="font-cinzel text-2xl font-bold text-gold">OneCocktail</span>
-                </div>
+                    <span class="font-cinzel text-2xl font-bold text-gold tracking-wider">OneCocktail</span>
+                </a>
                 
                 <div class="flex items-center gap-6">
-                    <div class="hidden md:flex gap-4">
-                        <button onclick="changerOnglet('accueil')" id="nav-accueil" class="text-gold font-bold transition px-3 py-2 text-sm border-b-2 border-gold">Accueil</button>
-                        <button onclick="changerOnglet('carte')" id="nav-carte" class="text-gray-300 hover:text-gold transition px-3 py-2 text-sm border-b-2 border-transparent">La Carte & Mise à jour</button>
+                    <div class="hidden md:flex items-center gap-6">
+                        <a href="#produit" class="text-gray-300 hover:text-gold transition text-sm font-medium">La Machine</a>
+                        <a href="#fonctionnalites" class="text-gray-300 hover:text-gold transition text-sm font-medium">Fonctionnalités</a>
+                        <a href="#fonctionnement" class="text-gray-300 hover:text-gold transition text-sm font-medium">Comment ça marche</a>
+                        <a href="./catalogue.html" class="text-gold font-bold hover:text-yellow-300 transition text-sm border-b-2 border-gold pb-1">
+                            Ajouter des cocktails
+                        </a>
                     </div>
-                    
-                    <!-- Bouton Panier (Redirige toujours vers l'onglet Carte) -->
-                    <button onclick="changerOnglet('carte'); document.getElementById('selection-panier').scrollIntoView({behavior: 'smooth'})" class="relative group bg-gold/10 border border-gold/50 px-4 py-2 rounded-lg hover:bg-gold/20 transition cursor-pointer">
-                        🛒 <span class="text-gold font-bold hidden sm:inline">Sélection</span>
-                        <span id="compteur-panier" class="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">0</span>
-                    </button>
+
+                    <!-- Raccourci Panier -->
+                    <a href="./catalogue.html#selection-panier" class="relative group bg-gold/10 border border-gold/50 px-3 py-2 rounded-lg hover:bg-gold/20 transition">
+                        🛒
+                        <span id="nav-compteur" class="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">0</span>
+                    </a>
                 </div>
             </div>
         </div>
     </nav>
 
-    <main class="flex-grow pt-32 pb-16">
-        
-        <!-- ============================================== -->
-        <!-- ONGLET 1 : LA VITRINE (ACCUEIL)                -->
-        <!-- ============================================== -->
-        <div id="onglet-accueil" class="block fade-in-up">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                <h1 class="text-4xl md:text-6xl font-bold mb-6">
-                    Embarquez pour <br>
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-gold to-yellow-200">
-                        L'Aventure OneCocktail
-                    </span>
-                </h1>
-                <p class="mt-4 text-xl text-gray-400 max-w-2xl mx-auto mb-10">
-                    La machine à cocktails automatisée qui transforme votre salon en taverne de légende. Choisissez, cliquez, dégustez.
-                </p>
-                <button onclick="changerOnglet('carte')" class="bg-gold text-dark font-bold px-8 py-4 rounded-lg hover:bg-gold-hover transition text-lg shadow-[0_0_15px_rgba(212,175,55,0.4)]">
-                    Découvrir le catalogue Cloud
-                </button>
-            </div>
+    <!-- Section Hero (Bannière principale) -->
+    <header class="pt-36 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center fade-in-up">
+        <div class="inline-block px-4 py-1.5 rounded-full border border-gold/30 bg-gold/10 text-gold text-xs font-semibold tracking-widest uppercase mb-6">
+            L'Innovation au service de vos soirées
+        </div>
+        <h1 class="text-4xl sm:text-6xl lg:text-7xl font-bold font-cinzel leading-tight mb-6">
+            Le Trésor Suprême de la <br>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-gold via-yellow-200 to-gold">
+                Mixologie Automatisée
+            </span>
+        </h1>
+        <p class="text-lg sm:text-xl text-gray-400 max-w-3xl mx-auto mb-10 leading-relaxed">
+            Prenez le contrôle du bar sans effort. Avec <strong class="text-white">OneCocktail</strong>, pilotez votre machine directement depuis votre smartphone, servez des créations dosées au millilitre près et enrichissez votre carte à l'infini.
+        </p>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a href="./catalogue.html" class="w-full sm:w-auto bg-gold text-dark font-bold px-8 py-4 rounded-xl hover:bg-gold-hover transition text-lg shadow-[0_0_25px_rgba(212,175,55,0.4)]">
+                 Explorer & Ajouter des Cocktails
+            </a>
+            <a href="#produit" class="w-full sm:w-auto glass-effect text-white font-semibold px-8 py-4 rounded-xl hover:border-gold/60 transition text-lg">
+                Découvrir la machine
+            </a>
+        </div>
+    </header>
 
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div class="glass-effect rounded-xl p-8 text-center hover:-translate-y-2 transition duration-300">
-                        <div class="text-gold text-4xl mb-4">⚙️</div>
-                        <h3 class="text-xl font-bold font-cinzel text-white mb-2">Automatisé & Précis</h3>
-                        <p class="text-gray-400 text-sm">Contrôlez la préparation de vos cocktails depuis l'interface web de votre machine avec un dosage au millilitre près.</p>
-                    </div>
-                    <div class="glass-effect rounded-xl p-8 text-center border border-gold/40 hover:-translate-y-2 transition duration-300">
-                        <div class="text-gold text-4xl mb-4">🌍</div>
-                        <h3 class="text-xl font-bold font-cinzel text-white mb-2">Agrandissez l'Équipage</h3>
-                        <p class="text-gray-400 text-sm">Votre machine n'est jamais figée. Connectez-la à votre Wi-Fi et téléchargez instantanément de nouvelles recettes depuis le Cloud !</p>
-                    </div>
-                    <div class="glass-effect rounded-xl p-8 text-center hover:-translate-y-2 transition duration-300">
-                        <div class="text-gold text-4xl mb-4">🥃</div>
-                        <h3 class="text-xl font-bold font-cinzel text-white mb-2">Large Choix</h3>
-                        <p class="text-gray-400 text-sm">Des classiques intemporels aux créations sans alcool, explorez un trésor de saveurs adaptées à tous les goûts.</p>
-                    </div>
+    <!-- Section Présentation du Produit -->
+    <section id="produit" class="py-20 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
+        <div class="glass-effect rounded-3xl p-8 md:p-14 border border-gold/20 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold font-cinzel text-gold mb-6">
+                Votre Barman Personnel Connecté
+            </h2>
+            <p class="text-gray-300 text-lg max-w-3xl mx-auto mb-6 leading-relaxed">
+                Fini les dosages approximatifs et l'attente interminable. <strong class="text-white">OneCocktail</strong> embarque un système de distribution haute précision piloté par un microcontrôleur embarqué.
+            </p>
+            <p class="text-gray-400 max-w-3xl mx-auto mb-12 leading-relaxed">
+                Connectez simplement la machine à votre réseau Wi-Fi domestique : vous accédez immédiatement à son interface web locale depuis n'importe quel téléphone, tablette ou ordinateur, tout en conservant votre accès à Internet.
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+                <div class="bg-black/40 border border-white/10 rounded-2xl p-6">
+                    <span class="text-gold text-xl block mb-2">✦ Zéro installation</span>
+                    <p class="text-sm text-gray-300">Aucune application mobile à télécharger : l'interface de contrôle est directement hébergée par la machine et accessible via votre navigateur.</p>
+                </div>
+                <div class="bg-black/40 border border-white/10 rounded-2xl p-6">
+                    <span class="text-gold text-xl block mb-2">✦ Double mode Wi-Fi</span>
+                    <p class="text-sm text-gray-300">Utilisez le point d'accès autonome de la machine n'importe où, ou reliez-la à votre box maison pour naviguer librement.</p>
+                </div>
+                <div class="bg-black/40 border border-white/10 rounded-2xl p-6">
+                    <span class="text-gold text-xl block mb-2">✦ Entretien simplifié</span>
+                    <p class="text-sm text-gray-300">Un cycle de nettoyage intégré permet de rincer l'ensemble des circuits hydrauliques en un seul clic après vos soirées.</p>
                 </div>
             </div>
         </div>
+    </section>
 
-        <!-- ============================================== -->
-        <!-- ONGLET 2 : LA CARTE ET LE PANIER               -->
-        <!-- ============================================== -->
-        <div id="onglet-carte" class="hidden fade-in-up">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                <h1 class="text-3xl md:text-5xl font-bold mb-4">
-                    Construisez votre <span class="text-transparent bg-clip-text bg-gradient-to-r from-gold to-yellow-200">Carte Sur-Mesure</span>
-                </h1>
-                <p class="text-gray-400 mb-10 max-w-2xl mx-auto">Sélectionnez les recettes qui rejoindront votre machine et générez le fichier de mise à jour.</p>
+    <!-- Section Fonctionnalités -->
+    <section id="fonctionnalites" class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold font-cinzel text-white mb-4">Pourquoi choisir OneCocktail ?</h2>
+            <p class="text-gray-400 max-w-2xl mx-auto">Une conception pensée pour la convivialité, la fiabilité et l'évolution continue.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="glass-effect rounded-2xl p-7 hover:-translate-y-2 transition duration-300">
+                <h3 class="text-lg font-bold font-cinzel text-gold mb-3">Précision Chirurgicale</h3>
+                <p class="text-gray-400 text-sm leading-relaxed">Chaque ingrédient est dosé au millilitre près pour garantir un équilibre des saveurs parfait à chaque verre.</p>
             </div>
 
-            <!-- Grille du catalogue -->
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div id="cocktail-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
-                    <!-- Généré par JS -->
-                </div>
+            <div class="glass-effect rounded-2xl p-7 border border-gold/40 hover:-translate-y-2 transition duration-300 relative overflow-hidden">
+                <h3 class="text-lg font-bold font-cinzel text-gold mb-3">Base de Données Évolutive</h3>
+                <p class="text-gray-400 text-sm leading-relaxed">Ajoutez facilement de nouveaux cocktails à votre machine en sélectionnant vos recettes préférées sur notre catalogue en ligne.</p>
             </div>
 
-            <!-- Section Panier -->
-            <div id="selection-panier" class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-24">
-                <div class="glass-effect rounded-2xl p-8 border border-gold/30 shadow-[0_0_15px_rgba(212,175,55,0.1)]">
-                    <div class="flex justify-between items-center border-b border-gold/20 pb-4 mb-6">
-                        <h2 class="text-2xl font-bold font-cinzel text-white">Votre Sélection (<span id="titre-compteur-panier">0</span>)</h2>
-                        <button id="btn-generer" onclick="genererFichierJSON()" class="bg-gold text-dark font-bold px-6 py-3 rounded-lg hover:bg-gold-hover transition opacity-50 cursor-not-allowed" disabled>
-                            📥 Générer update.json
-                        </button>
-                    </div>
-                    
-                    <div id="liste-panier" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <p class="text-gray-400 italic col-span-full text-center py-6">Aucun cocktail sélectionné pour l'instant.</p>
-                    </div>
-                </div>
+            <div class="glass-effect rounded-2xl p-7 hover:-translate-y-2 transition duration-300">
+                <h3 class="text-lg font-bold font-cinzel text-gold mb-3">Pilotage Multi-Invités</h3>
+                <p class="text-gray-400 text-sm leading-relaxed">Vos invités se connectent au Wi-Fi et commandent eux-mêmes leur verre depuis leur propre téléphone.</p>
+            </div>
+
+            <div class="glass-effect rounded-2xl p-7 hover:-translate-y-2 transition duration-300">
+                <h3 class="text-lg font-bold font-cinzel text-gold mb-3">Avec ou Sans Alcool</h3>
+                <p class="text-gray-400 text-sm leading-relaxed">La machine s'adapte aux bouteilles installées et affiche automatiquement les cocktails et mocktails réalisables.</p>
             </div>
         </div>
-    </main>
+    </section>
 
-    <footer class="glass-effect py-8 border-t border-gold/20 mt-auto">
-        <div class="max-w-7xl mx-auto text-center">
-            <span class="font-cinzel text-gold font-bold">OneCocktail</span>
-            <p class="text-gray-500 text-sm mt-2">Projet Étudiant - Architecture IoT & Web</p>
+    <!-- Section Étapes d'utilisation -->
+    <section id="fonctionnement" class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div class="glass-effect rounded-3xl p-8 md:p-14 border border-white/10">
+            <h2 class="text-3xl font-bold font-cinzel text-center text-gold mb-12">Comment enrichir votre machine ?</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                <div class="p-4">
+                    <div class="w-12 h-12 rounded-full bg-gold text-dark font-bold text-xl flex items-center justify-center mx-auto mb-4">1</div>
+                    <h4 class="font-cinzel font-bold text-white text-lg mb-2">Explorez la Carte</h4>
+                    <p class="text-gray-400 text-sm">Rendez-vous dans l'onglet <a href="./catalogue.html" class="text-gold underline">Ajouter des cocktails</a> et piochez les nouvelles recettes qui vous font envie.</p>
+                </div>
+                <div class="p-4">
+                    <div class="w-12 h-12 rounded-full bg-gold text-dark font-bold text-xl flex items-center justify-center mx-auto mb-4">2</div>
+                    <h4 class="font-cinzel font-bold text-white text-lg mb-2">Générez votre Pack</h4>
+                    <p class="text-gray-400 text-sm">Validez votre sélection pour télécharger instantanément votre fichier de mise à jour personnalisé.</p>
+                </div>
+                <div class="p-4">
+                    <div class="w-12 h-12 rounded-full bg-gold text-dark font-bold text-xl flex items-center justify-center mx-auto mb-4">3</div>
+                    <h4 class="font-cinzel font-bold text-white text-lg mb-2">Importez sur la Machine</h4>
+                    <p class="text-gray-400 text-sm">Envoyez le fichier sur l'interface de votre OneCocktail : les nouveautés s'ajoutent automatiquement sans doublons !</p>
+                </div>
+            </div>
+
+            <div class="text-center mt-10">
+                <a href="./catalogue.html" class="inline-block bg-gold text-dark font-bold px-8 py-4 rounded-xl hover:bg-gold-hover transition">
+                    Aller sélectionner nos cocktails →
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="glass-effect py-10 border-t border-gold/20 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <img src="./assets/logo.png" alt="OneCocktail" class="h-9 w-auto">
+                <span class="font-cinzel text-gold font-bold text-lg">OneCocktail</span>
+            </div>
+            <p class="text-gray-500 text-sm">Projet d'Intégration - Système Embarqué & Web</p>
         </div>
     </footer>
 
-    <!-- Logique JavaScript -->
     <script>
-        let catalogueGlobal = []; 
-        let panier = [];
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            await chargerCatalogue();
+        document.addEventListener('DOMContentLoaded', () => {
+            const panierSauvegarde = JSON.parse(localStorage.getItem('onecocktail_panier')) || [];
+            document.getElementById('nav-compteur').innerText = panierSauvegarde.length;
         });
-
-        // --- Système de Navigation (Onglets) ---
-        function changerOnglet(onglet) {
-            const accueilDiv = document.getElementById('onglet-accueil');
-            const carteDiv = document.getElementById('onglet-carte');
-            const btnAccueil = document.getElementById('nav-accueil');
-            const btnCarte = document.getElementById('nav-carte');
-
-            if (onglet === 'accueil') {
-                accueilDiv.classList.remove('hidden');
-                accueilDiv.classList.add('block');
-                carteDiv.classList.remove('block');
-                carteDiv.classList.add('hidden');
-                
-                // Style Navbar
-                btnAccueil.classList.replace('text-gray-300', 'text-gold');
-                btnAccueil.classList.replace('border-transparent', 'border-gold');
-                btnCarte.classList.replace('text-gold', 'text-gray-300');
-                btnCarte.classList.replace('border-gold', 'border-transparent');
-            } else {
-                accueilDiv.classList.remove('block');
-                accueilDiv.classList.add('hidden');
-                carteDiv.classList.remove('hidden');
-                carteDiv.classList.add('block');
-                
-                // Style Navbar
-                btnCarte.classList.replace('text-gray-300', 'text-gold');
-                btnCarte.classList.replace('border-transparent', 'border-gold');
-                btnAccueil.classList.replace('text-gold', 'text-gray-300');
-                btnAccueil.classList.replace('border-gold', 'border-transparent');
-            }
-            // Remonter en haut de la page au changement d'onglet
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        // --- Logique du Catalogue et Panier ---
-        async function chargerCatalogue() {
-            const grid = document.getElementById('cocktail-grid');
-            try {
-                const response = await fetch('./api/catalog.json');
-                if (!response.ok) throw new Error("Fichier introuvable");
-                
-                const data = await response.json();
-                catalogueGlobal = data.recettes || [];
-
-                catalogueGlobal.forEach((cocktail, index) => {
-                    const card = document.createElement('div');
-                    card.className = 'glass-effect rounded-lg p-5 border border-white/5 flex flex-col justify-between';
-                    
-                    const ingredientsList = cocktail.ingredients
-                        .map(ing => `<span class="text-gray-300 text-sm">${ing.ingredient}</span>`)
-                        .join(', ');
-
-                    card.innerHTML = `
-                        <div>
-                            <h4 class="font-cinzel text-lg font-bold text-gold mb-2">${cocktail.nom}</h4>
-                            <p class="text-xs text-gray-400 mb-4 line-clamp-2">${ingredientsList}</p>
-                        </div>
-                        <button onclick="ajouterAuPanier(${index})" class="w-full mt-2 bg-white/10 hover:bg-gold/20 text-gold border border-gold/30 rounded py-2 text-sm transition">
-                            + Ajouter à la sélection
-                        </button>
-                    `;
-                    grid.appendChild(card);
-                });
-            } catch (error) {
-                console.error("Erreur:", error);
-                grid.innerHTML = '<p class="text-red-400 col-span-full text-center">Erreur de chargement du catalogue.</p>';
-            }
-        }
-
-        function ajouterAuPanier(indexCatalogue) {
-            const cocktail = catalogueGlobal[indexCatalogue];
-            if (panier.some(item => item.nom === cocktail.nom)) {
-                alert("Ce cocktail est déjà dans votre sélection !");
-                return;
-            }
-            panier.push(cocktail);
-            mettreAJourAffichagePanier();
-        }
-
-        function retirerDuPanier(nomCocktail) {
-            panier = panier.filter(cocktail => cocktail.nom !== nomCocktail);
-            mettreAJourAffichagePanier();
-        }
-
-        function mettreAJourAffichagePanier() {
-            const listePanier = document.getElementById('liste-panier');
-            const compteurs = [document.getElementById('compteur-panier'), document.getElementById('titre-compteur-panier')];
-            const btnGenerer = document.getElementById('btn-generer');
-
-            compteurs.forEach(el => el.innerText = panier.length);
-
-            if (panier.length > 0) {
-                btnGenerer.disabled = false;
-                btnGenerer.classList.remove('opacity-50', 'cursor-not-allowed');
-            } else {
-                btnGenerer.disabled = true;
-                btnGenerer.classList.add('opacity-50', 'cursor-not-allowed');
-            }
-
-            if (panier.length === 0) {
-                listePanier.innerHTML = '<p class="text-gray-400 italic col-span-full text-center py-6">Aucun cocktail sélectionné.</p>';
-                return;
-            }
-
-            listePanier.innerHTML = '';
-            panier.forEach(cocktail => {
-                const item = document.createElement('div');
-                item.className = 'bg-black/40 border border-white/10 rounded-lg p-4 flex justify-between items-center';
-                item.innerHTML = `
-                    <span class="font-cinzel text-white">${cocktail.nom}</span>
-                    <button onclick="retirerDuPanier('${cocktail.nom}')" class="text-red-400 hover:text-red-300 text-sm bg-red-400/10 px-2 py-1 rounded">
-                        Retirer
-                    </button>
-                `;
-                listePanier.appendChild(item);
-            });
-        }
-
-        function genererFichierJSON() {
-            if (panier.length === 0) return;
-
-            const ingredientsUniques = new Set();
-            panier.forEach(cocktail => {
-                cocktail.ingredients.forEach(ing => {
-                    ingredientsUniques.add(ing.ingredient);
-                });
-            });
-
-            const updateData = {
-                version: 3,
-                ingredients: Array.from(ingredientsUniques),
-                recettes: panier
-            };
-
-            const jsonString = JSON.stringify(updateData, null, 2);
-            const blob = new Blob([jsonString], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'onecocktail_update.json';
-            document.body.appendChild(a);
-            a.click();
-            
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
     </script>
 </body>
 </html>
