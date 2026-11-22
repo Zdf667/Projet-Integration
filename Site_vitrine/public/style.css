@@ -1,0 +1,67 @@
+/* Importation des polices Google (Cinzel pour le côté aventure/pirate, Inter pour la lisibilité) */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap');
+
+/* Variables CSS personnalisées */
+:root {
+  --gold-primary: #d4af37;
+  --gold-hover: #b5952f;
+  --bg-dark: #0a0a0a;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-dark);
+  color: #f3f4f6;
+  scroll-behavior: smooth;
+}
+
+h1, h2, h3, .font-cinzel {
+  font-family: 'Cinzel', serif;
+}
+
+/* Effet de verre dépoli (Glassmorphism) pour les cartes et la navbar */
+.glass-effect {
+  background: rgba(20, 20, 20, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+/* Animation douce pour l'apparition des éléments */
+.fade-in-up {
+  animation: fadeInUp 0.8s ease-out forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Effet de lueur dorée sur le logo */
+.logo-glow {
+  filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.6));
+  transition: filter 0.3s ease;
+}
+
+.logo-glow:hover {
+  filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.9));
+}
+
+/* Personnalisation de la scrollbar pour coller au thème */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #111;
+}
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold-primary);
+}
