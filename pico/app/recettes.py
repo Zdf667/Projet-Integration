@@ -100,6 +100,17 @@ def realisables(donnees, recipients):
     return resultat
 
 
+def manquants(recette, recipients):
+    """US2.6 – Ingrédients de la recette qui ne sont dans aucun récipient (liste vide = réalisable)."""
+    charges = set(x for x in recipients if x)
+    return [ligne["ingredient"] for ligne in recette["ingredients"] if ligne["ingredient"] not in charges]
+
+
+def avec_ingredient(donnees, nom):
+    """US2.7 – Recettes qui contiennent l'ingrédient `nom` (liste vide si inconnu)."""
+    return [r for r in donnees["recettes"] if any(ligne["ingredient"] == nom for ligne in r["ingredients"])]
+
+
 def charger():
     """Charge et valide recettes.json. Lève ValueError / OSError si le fichier est absent ou faux."""
     donnees = storage.lire_json(config.trouver_data(config.FICHIER_RECETTES), None)

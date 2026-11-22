@@ -24,16 +24,30 @@ WIFI_MAX = 8                        # nombre de réseaux Wi-Fi qu'on peut enregi
 WIFI_ESSAIS = 3                     # au démarrage, nombre de réseaux essayés avant de passer en point d'accès
 
 # --- Pompes et relais (US3.1) -------------------------------------------------------------
-PINS_RELAIS = (2, 3, 4, 5)          # GP2 à GP5 -> IN1 à IN4 du module 4 relais
+PINS_RELAIS = (10, 11, 12, 13)      # GP10 à GP13 -> IN1 à IN4 du module 4 relais
 RELAIS_ACTIF_BAS = True             # True : relais collé quand la broche est à 0 V (la masse), comme sur notre module
 # Débit mesuré de chaque pompe (US3.2), en ml par seconde : 133,75 / 139,41 / 137,20 / 141,03 ml/min
 DEBITS_ML_S = (2.23, 2.32, 2.29, 2.35)
 DUREE_MAX_S = 240                   # garde-fou : une pompe ne tourne jamais plus longtemps d'affilée
 
+# --- Service en parallèle (US3.6) ---------------------------------------------------------
+SERVICE_PARALLELE = True            # True : les pompes versent en même temps ; False : une pompe à la fois
+DEPART_DECALE_S = 0.15              # délai entre le démarrage de deux pompes (limite l'appel de courant)
+
+# --- Statistiques de service (US6.4) ------------------------------------------------------
+FICHIER_HISTORIQUE = "historique.json"
+
+# --- Détection du verre : cellule de charge + HX711 (US6.2) -------------------------------
+VERRE_ACTIF = False                 # passer à True une fois la cellule de charge branchée et calibrée
+PIN_HX711_DT = 6                    # GP6 -> DT du module HX711
+PIN_HX711_SCK = 7                   # GP7 -> SCK du module HX711
+VERRE_SEUIL_G = 20                  # poids minimal pour considérer qu'un verre est posé
+FICHIER_VERRE = "verre.json"        # tare et facteur de calibration (réglés dans /admin/verre)
+
 # --- Ruban de LED d'état (US4.2) ----------------------------------------------------------
 PIN_LED = 15                        # GP15 -> résistance 330 ohms -> fil de données (DIN) du ruban
-LED_NB = 26                         # nombre de LED du ruban (WS2812 / NeoPixel, commandables une par une)
-LED_LUMINOSITE = 0.25               # 0 à 1 : limite le courant (26 LED blanches à fond = plus de 1,5 A)
+LED_NB = 19                         # nombre de LED du ruban (WS2812 / NeoPixel, commandables une par une)
+LED_LUMINOSITE = 0.25               # 0 à 1 : limite le courant (19 LED blanches à fond = plus de 1,1 A)
 
 # --- Mode administrateur (US4.3) ----------------------------------------------------------
 PIN_ADMIN_DEFAUT = "1234"           # à changer dans le mode administrateur (enregistré dans data/admin.json)

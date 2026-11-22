@@ -1,9 +1,39 @@
 
-from app import conseil, recettes
+from app import conseil, erreurs, recettes
 from app.pages import bandeau_occupe, detail, e, fin, haut, total
 
-def page_utilisateur(recipients, data, erreur_recettes=None, etat=None, message=None):
-    """Contenu des 4 récipients + cocktails réalisables (chaque carte mène au détail et au lancement)."""
+def _carte(r, numero, recipients, manque=None):
+    """Carte d'un cocktail. Avec `manque` (liste d'ingrédients), la carte est grisée et sans bouton (US2.6)."""
+    classe = "carte indispo" if manque else "carte"
+    h = ['<article class="' + classe + '"><header><h3>' + e(r["nom"]) + '</h3><span class="total">' +
+         str(total(r)) + ' ml</span></header><ul class="doses">']
+    for ligne in r["ingredients"]:
+        if ligne["ingredient"] in recipients:
+            h.append('<li class="dose c{}"><span>{}</span><b>{} ml</b></li>'.format(
+                recipients.index(ligne["ingredient"]), e(ligne["ingredient"]), ligne["ml"]))
+        else:
+            h.append('<li class="dose"><span>{}</span><b>{} ml</b></li>'.format(e(ligne["ingredient"]), ligne["ml"]))
+    h.append('</ul>' + conseil.html_recette(r))
+    if manque:
+        h.append('<p class="indice">Manque : ' + e(", ".join(manque)) + '</p>')
+    else:
+        h.append('<a class="bouton" href="/cocktail?id={}">Choisir</a>'.format(numero))
+    h.append('</article>')
+    return "".join(h)
+
+
+def _filtre(data, filtre):
+    h = ['<form class="formulaire" method="get" action="/"><label class="champ c0"><span>Filtrer par ingrédient</span>'
+         '<select name="ingredient"><option value="">Tous les ingrédients</option>']
+    for nom in data["ingredients"]:
+        h.append('<option value="' + e(nom) + '"' + (" selected" if nom == filtre else "") + '>' + e(nom) + '</option>')
+    h.append('</select></label><button type="submit">Filtrer</button></form>')
+    return "".join(h)
+
+
+def page_utilisateur(recipients, data, erreur_recettes=None, etat=None, message=None, filtre=""):
+    """Contenu des 4 récipients + cocktails réalisables, puis ceux auxquels il manque un ingrédient (US2.6),
+    avec un filtre par ingrédient (US2.7)."""
     h = haut("user", message=message, erreur_recettes=erreur_recettes)
     h.append(bandeau_occupe(etat))
 
@@ -16,23 +46,33 @@ def page_utilisateur(recipients, data, erreur_recettes=None, etat=None, message=
     h.append('</ul></section>')
 
     if data:
-        possibles = recettes.realisables(data, recipients)
-        h.append('<section><h2>Cocktails réalisables ({})</h2>'.format(len(possibles)))
+        if filtre and filtre in data["ingredients"]:
+            retenues = recettes.avec_ingredient(data, filtre)
+        elif filtre:
+            retenues = []
+        else:
+            retenues = data["recettes"]
+        possibles = [r for r in retenues if not recettes.manquants(r, recipients)]
+        autres = [r for r in retenues if recettes.manquants(r, recipients)]
+
+        h.append('<section>' + _filtre(data, filtre))
+        h.append('<h2>Cocktails réalisables ({})</h2>'.format(len(possibles)))
         if not any(recipients):
             h.append('<p class="indice">Aucun ingrédient chargé. Passez en <a href="/admin">mode administrateur</a> '
                      'pour remplir les récipients.</p>')
-        elif not possibles:
-            h.append('<p class="indice">Aucun cocktail réalisable avec ces ingrédients. Changez un récipient en '
-                     '<a href="/admin">mode administrateur</a>.</p>')
+        elif not retenues:
+            h.append('<p class="indice">Aucune recette avec cet ingrédient.</p>')
+        elif not possibles and not filtre:
+            h.append('<p class="indice">' + e(erreurs.texte("aucun_cocktail")) + '</p>')
         for r in possibles:
-            numero = data["recettes"].index(r)
-            h.append('<article class="carte"><header><h3>' + e(r["nom"]) + '</h3><span class="total">' +
-                     str(total(r)) + ' ml</span></header><ul class="doses">')
-            for ligne in r["ingredients"]:
-                h.append('<li class="dose c{}"><span>{}</span><b>{} ml</b></li>'.format(
-                    recipients.index(ligne["ingredient"]), e(ligne["ingredient"]), ligne["ml"]))
-            h.append('</ul>' + conseil.html_recette(r) + '<a class="bouton" href="/cocktail?id={}">Choisir</a></article>'.format(numero))
+            h.append(_carte(r, data["recettes"].index(r), recipients))
         h.append('</section>')
+
+        if autres:
+            h.append('<section><h2>Il manque un ingrédient ({})</h2>'.format(len(autres)))
+            for r in autres:
+                h.append(_carte(r, data["recettes"].index(r), recipients, recettes.manquants(r, recipients)))
+            h.append('</section>')
     return fin(h)
 
 

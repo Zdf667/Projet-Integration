@@ -11,6 +11,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 
 from app import admin, catalogue, config, conseil, ingredients, led, nettoyage, pages_admin, pompes, recettes, reseau  # noqa: E402
 from app import sequenceur, serveur  # noqa: E402
+from app import erreurs, historique, verre  # noqa: E402
 
 # Petit jeu de recettes (le test ne dépend pas du vrai data/recettes.json)
 RECETTES = {
@@ -232,7 +233,8 @@ def test_led():
     verifie(led.nom_motif(base) == "attente" and led.couleurs(base, 0) == [led.VERT_DOUX] * n, "prête : ruban vert doux")
     cours = {"etat": "en_cours", "mode": "cocktail", "pct": 50}
     image = led.couleurs(cours, 0)
-    verifie(len(image) == n and image[:13] == [led.ORANGE] * 13 and image[14:] == [led.ETEINT] * (n - 14), "en cours : barre à 50 %")
+    k = n * 50 // 100       # LED allumées à 50 % (la suivante clignote)
+    verifie(len(image) == n and image[:k] == [led.ORANGE] * k and image[k + 1:] == [led.ETEINT] * (n - k - 1), "en cours : barre à 50 %")
     verifie(led.couleurs(dict(cours, pct=100), 0) == [led.ORANGE] * n, "en cours : barre pleine à 100 %")
     verifie(led.couleurs(dict(cours, pct=0), 0).count(led.ORANGE) == 0, "en cours : barre vide à 0 %")
     net = {"etat": "en_cours", "mode": "nettoyage", "pct": 10}
@@ -242,7 +244,7 @@ def test_led():
     verifie(led.couleurs(fini, 0)[0] == led.VERT and led.couleurs(fini, 200)[0] == led.ETEINT, "verre prêt : flashs verts")
     err = {"etat": "erreur", "mode": "", "pct": 0}
     verifie(led.couleurs(err, 0)[0] == led.ETEINT and led.couleurs(err, 200)[0] == led.ROUGE, "erreur : clignotement rouge")
-    verifie(all(len(led.couleurs(e, t)) == n for e in (base, cours, net, fini, err) for t in (0, 100, 999)), "toujours 26 LED")
+    verifie(all(len(led.couleurs(e, t)) == n for e in (base, cours, net, fini, err) for t in (0, 100, 999)), "toujours {} LED".format(n))
     verifie(led._echelle((255, 100, 0)) == (int(255 * config.LED_LUMINOSITE), int(100 * config.LED_LUMINOSITE), 0), "luminosité limitée")
 
 
@@ -348,6 +350,202 @@ def test_pages():
     verifie("<b>" not in html.split("<main>")[1].split("Ingrédients des récipients")[1], "HTML échappé")
 
 
+async def mesure_service(recette_id, recipients=None):
+    """Lance un cocktail et renvoie sa durée réelle en secondes."""
+    debut = asyncio.get_event_loop().time()
+    w = await requete("POST", "/servir", "id={}".format(recette_id))
+    verifie(w.code() == 303, "cocktail lancé")
+    await attendre_fin(5)
+    return asyncio.get_event_loop().time() - debut
+
+
+async def test_nouvelles_us(data):
+    # --- US2.6 : recettes non réalisables, avec ce qui manque ---------------------------------
+    r_cuba = data["recettes"][3]
+    verifie(recettes.manquants(r_cuba, ["Vodka", None, None, None]) == ["Rhum", "Cola"], "manquants")
+    verifie(recettes.manquants(data["recettes"][0], ["Vodka", "Jus d'orange", None, None]) == [], "rien ne manque")
+    ingredients.enregistrer(["Vodka", "Jus d'orange", None, None], data["ingredients"])
+    w = await requete("GET", "/")
+    t = w.texte()
+    verifie("Il manque un ingrédient" in t and "Manque : Rhum, Cola" in t, "US2.6 : section « il manque un ingrédient »")
+    verifie("/cocktail?id=3" not in t and "/cocktail?id=0" in t, "US2.6 : pas de bouton sur une recette non réalisable")
+    w = await requete("POST", "/servir", "id=3")
+    verifie(w.code() == 400 and "aucun récipient" in w.texte(), "US2.6 : /servir refuse une recette non réalisable")
+
+    # --- US2.7 : filtre par ingrédient --------------------------------------------------------
+    w = await requete("GET", "/?ingredient=Rhum")
+    t = w.texte()
+    verifie("Cuba libre" in t and "Screwdriver" not in t, "US2.7 : filtre Rhum")
+    w = await requete("GET", "/?ingredient=Jus+d%27orange")
+    t = w.texte()
+    verifie("Screwdriver" in t and "Madras" in t and "Cuba libre" not in t, "US2.7 : accents et espaces")
+    w = await requete("GET", "/?ingredient=Inconnu")
+    verifie("Aucune recette avec cet ingrédient" in w.texte(), "US2.7 : ingrédient sans recette")
+    w = await requete("GET", "/?ingredient=")
+    verifie("Cuba libre" in w.texte() and "Screwdriver" in w.texte(), "US2.7 : tous les ingrédients")
+    verifie(len(recettes.avec_ingredient(data, "Vodka")) == 3, "avec_ingredient")
+
+    # --- US3.6 : pompes en parallèle -----------------------------------------------------------
+    config.DEBITS_ML_S = LENT                       # 100 ml/s : Screwdriver = 0,5 s + 1,5 s
+    config.SERVICE_PARALLELE = True
+    w = await requete("POST", "/servir", "id=0")
+    await asyncio.sleep(0.3)
+    verifie(pompes.est_allumee(1) and pompes.est_allumee(2), "US3.6 : les deux pompes tournent ensemble")
+    await attendre_fin(5)
+    sequenceur.acquitter()
+    d_par = await mesure_service(0)
+    sequenceur.acquitter()
+    config.SERVICE_PARALLELE = False
+    d_seq = await mesure_service(0)
+    sequenceur.acquitter()
+    config.SERVICE_PARALLELE = True
+    verifie(d_par < 1.85 and d_seq > 1.9, "US3.6 : le parallèle est plus rapide ({:.2f} s contre {:.2f} s)".format(d_par, d_seq))
+    pl = sequenceur.planifier(data["recettes"][2], ["Vodka", "Jus d'orange", "Jus de cranberry", None])
+    debuts, fins = sequenceur._calendrier(pl)
+    verifie(max(fins) < sum(x[2] for x in pl), "US3.6 : durée totale = la plus longue, pas la somme")
+    await requete("POST", "/ingredients", "r1=Vodka&r2=Jus+d%27orange&r3=Jus+de+cranberry&r4=", cookie=await ouvrir_admin())
+    w = await requete("POST", "/servir", "id=2")
+    await asyncio.sleep(0.35)
+    verifie(pompes.est_allumee(1) and pompes.est_allumee(2) and pompes.est_allumee(3), "US3.6 : trois pompes en marche")
+    sequenceur.arreter()
+    await asyncio.sleep(0.1)
+    verifie(all(not pompes.est_allumee(n) for n in range(1, 5)), "US3.6 : l'arrêt coupe toutes les pompes")
+    sequenceur.acquitter()
+
+    cookie = await ouvrir_admin()
+
+    # --- US6.4 : statistiques --------------------------------------------------------------------
+    config.DEBITS_ML_S = RAPIDE
+    historique.reinitialiser()
+    await mesure_service(0)
+    sequenceur.acquitter()
+    await mesure_service(0)
+    sequenceur.acquitter()
+    d = historique.lire()
+    verifie(d["services"] == 2 and d["cocktails"] == {"Screwdriver": 2}, "US6.4 : nombre de cocktails servis")
+    verifie(set(d) == {"version", "services", "cocktails"}, "US6.4 : seuls les compteurs sont enregistrés")
+    with open(config.chemin_data(config.FICHIER_HISTORIQUE), encoding="utf-8") as f:
+        verifie("ml" not in json.load(f), "US6.4 : aucun volume dans le fichier")
+    verifie(historique.consommation(d, data) == {"Vodka": 100, "Jus d'orange": 300}, "US6.4 : ml recalculés à l'affichage")
+    config.DEBITS_ML_S = LENT
+    await requete("POST", "/servir", "id=0")
+    await asyncio.sleep(0.2)
+    sequenceur.arreter()
+    await asyncio.sleep(0.1)
+    sequenceur.acquitter()
+    verifie(historique.lire()["services"] == 2, "US6.4 : un service arrêté n'est pas compté")
+    for nom, n in (("Madras", 1), ("Cuba libre", 1), ("Screwdriver", 1)):
+        for _ in range(n):
+            historique.enregistrer(nom)
+    c = historique.classement(historique.lire())
+    verifie(sum(x[2] for x in c) == 100 and c[0][0] == "Screwdriver", "US6.4 : proportions = 100 % (écart sur la plus grande ligne)")
+    storage_ancien = {"version": 1, "services": 5, "cocktails": {"Madras": 3}, "ml": {"Vodka": 120}, "derniers": [{"n": 1}]}
+    from app import storage
+    storage.ecrire_json(config.chemin_data(config.FICHIER_HISTORIQUE), storage_ancien)
+    verifie(historique.lire() == {"version": 1, "services": 3, "cocktails": {"Madras": 3}}, "US6.4 : ancien fichier nettoyé")
+    historique.reinitialiser()
+    config.DEBITS_ML_S = RAPIDE
+    await mesure_service(0)
+    sequenceur.acquitter()
+    w = await requete("GET", "/admin/stats")
+    verifie(w.code() == 303 and "/connexion" in w.texte(), "US6.4 : /admin/stats réservé à l'administrateur")
+    w = await requete("GET", "/admin/stats", cookie=cookie)
+    verifie(w.code() == 200 and "Screwdriver" in w.texte() and "1 cocktail" in w.texte() and "100 %" in w.texte(),
+            "US6.4 : page de statistiques")
+    w = await requete("POST", "/admin/stats/reset", cookie=cookie)
+    verifie(w.code() == 303 and historique.lire()["services"] == 0, "US6.4 : remise à zéro")
+    w = await requete("POST", "/admin/stats/reset")
+    verifie(w.code() == 303 and "/connexion" in w.texte(), "US6.4 : remise à zéro protégée")
+
+    # --- US6.2 : détection du verre --------------------------------------------------------------
+    await requete("POST", "/ingredients", "r1=Vodka&r2=Jus+d%27orange&r3=&r4=&v1=5000&v2=5000", cookie=cookie)
+    config.VERRE_ACTIF = True
+    verre.simuler(0)
+    w = await requete("POST", "/servir", "id=0")
+    verifie(w.code() == 400 and "Aucun verre" in w.texte() and not sequenceur.occupe(), "US6.2 : pas de verre, pas de départ")
+    verre.simuler(None)
+    w = await requete("POST", "/servir", "id=0")
+    verifie(w.code() == 400 and "capteur" in w.texte(), "US6.2 : capteur muet refusé")
+    verre.simuler(150)
+    config.DEBITS_ML_S = LENT
+    w = await requete("POST", "/servir", "id=0")
+    verifie(w.code() == 303, "US6.2 : avec un verre, la préparation démarre")
+    await asyncio.sleep(0.2)
+    verre.simuler(0)                                              # on retire le verre
+    await asyncio.sleep(0.9)
+    e = sequenceur.etat()
+    verifie(e["etat"] == "erreur" and "verre a été retiré" in e["message"], "US6.2 : verre retiré en cours de route")
+    verifie(all(not pompes.est_allumee(n) for n in range(1, 5)), "US6.2 : pompes coupées")
+    sequenceur.acquitter()
+    config.DEBITS_ML_S = RAPIDE
+    verre.simuler(1000)
+    w = await requete("POST", "/admin/verre/tare", cookie=cookie)
+    verifie(w.code() == 200 and verre.reglages()["tare"] == 1000, "US6.2 : tare")
+    verre.simuler(1500)
+    w = await requete("POST", "/admin/verre/calibrer", "poids=100", cookie=cookie)
+    verifie(w.code() == 200 and abs(verre.poids_g() - 100) < 0.01, "US6.2 : calibration (500 unités = 100 g)")
+    w = await requete("POST", "/admin/verre/calibrer", "poids=abc", cookie=cookie)
+    verifie(w.code() == 400 and "invalide" in w.texte(), "US6.2 : poids de référence invalide")
+    verifie(verre.present() and not (verre.simuler(1050) or verre.present()), "US6.2 : seuil de présence (10 g < 20 g)")
+    w = await requete("GET", "/admin/verre", cookie=cookie)
+    verifie(w.code() == 200 and "Poids mesuré" in w.texte(), "US6.2 : page de réglage")
+    config.VERRE_ACTIF = False
+    verre.simuler(None)
+    w = await requete("POST", "/servir", "id=0")
+    verifie(w.code() == 303, "US6.2 : détection désactivée = ignorée")
+    await attendre_fin()
+    sequenceur.acquitter()
+
+    # --- US4.4 : messages d'erreur clairs -------------------------------------------------------
+    verifie("pompe 2" in erreurs.texte("pompe", n=2, detail="court-circuit"), "US4.4 : pompe en défaut")
+    verifie("introuvable" in erreurs.texte("wifi_introuvable", ssid="Box"), "US4.4 : Wi-Fi introuvable")
+    verifie("refusé" in erreurs.texte("wifi_mdp", ssid="Box"), "US4.4 : mauvais mot de passe")
+    verifie("mise à jour" in erreurs.texte("maj"), "US4.4 : mise à jour échouée")
+    verifie("erreur est survenue" in erreurs.texte("code_inconnu"), "US4.4 : code inconnu : message générique")
+
+    class FausseWifi:
+        def __init__(self, statut):
+            self.s = statut
+
+        def status(self):
+            return self.s
+    verifie("introuvable" in reseau._motif_echec(FausseWifi(-2), "Box"), "US4.4 : réseau introuvable")
+    verifie("mot de passe" in reseau._motif_echec(FausseWifi(-3), "Box"), "US4.4 : mot de passe faux")
+    verifie("ne répond pas" in reseau._motif_echec(FausseWifi(0), "Box"), "US4.4 : pas de réponse")
+
+    vrai = pompes.pump_on
+
+    def en_panne(n):
+        if n == 2:
+            raise OSError("relais bloqué")
+        vrai(n)
+    pompes.pump_on = en_panne
+    await requete("POST", "/servir", "id=0")
+    await attendre_fin()
+    e = sequenceur.etat()
+    pompes.pump_on = vrai
+    verifie(e["etat"] == "erreur" and "pompe 2" in e["message"] and "relais bloqué" in e["message"], "US4.4 : pompe en défaut affichée")
+    verifie(all(not pompes.est_allumee(n) for n in range(1, 5)), "US4.4 : pompes arrêtées après un défaut")
+    t = (await requete("GET", "/suivi")).texte()
+    verifie("pompe 2" in t, "US4.4 : l'erreur s'affiche sur la page de suivi")
+    sequenceur.acquitter()
+    verifie(sequenceur.etat()["etat"] == "attente" and sequenceur.etat()["message"] == "", "US4.4 : retour à l'état initial")
+    await requete("POST", "/ingredients", "r1=&r2=&r3=&r4=", cookie=cookie)
+    t = (await requete("GET", "/")).texte()
+    verifie("Aucun ingrédient chargé" in t, "US4.4 : aucun ingrédient chargé")
+    await requete("POST", "/ingredients", "r1=Rhum&r2=&r3=&r4=", cookie=cookie)
+    t = (await requete("GET", "/?ingredient=")).texte()
+    verifie("Aucun cocktail réalisable" in t, "US4.4 : aucun cocktail réalisable")
+    sequenceur.arreter()
+    verifie(sequenceur.etat()["message"] in ("", "Préparation arrêtée. Le verre est incomplet : videz-le avant de recommencer."),
+            "US4.4 : message d'arrêt")
+
+
+async def ouvrir_admin():
+    w = await requete("POST", "/connexion", "pin=1234")
+    return "sid=" + lire_jeton(w)
+
+
 async def principal():
     data = recettes.charger()
     catalogue.charger()
@@ -362,6 +560,7 @@ async def principal():
     test_conseil()
     test_pages()
     await test_web(data)
+    await test_nouvelles_us(data)
 
 
 try:

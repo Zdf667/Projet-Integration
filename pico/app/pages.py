@@ -31,6 +31,7 @@ def haut(mode, message=None, erreur=None, erreur_recettes=None, connecte=False, 
     if connecte:
         h.append('<nav class="sous" aria-label="Menu administrateur">'
                  '<a href="/admin">Ingrédients</a><a href="/admin/nettoyage">Nettoyage</a>'
+                 '<a href="/admin/stats">Statistiques</a><a href="/admin/verre">Verre</a>'
                  '<a href="/admin/wifi">Wi-Fi</a><a href="/admin/pin">Code PIN</a>'
                  '<a href="/deconnexion">Déconnexion</a></nav>')
     if message:

@@ -1,14 +1,14 @@
 # US4.2 – Ruban de LED adressables (WS2812 / NeoPixel) : config.LED_NB LED commandables une par une, un seul fil de données.
 #
 #   prête        tout le ruban en vert doux
-#   en cours     barre orange qui se remplit avec l'avancement (chaque LED = 1/26 de la préparation)
+#   en cours     barre orange qui se remplit avec l'avancement (chaque LED = 1/19 de la préparation)
 #   verre prêt   tout le ruban flashe en vert deux fois, puis une pause
 #   erreur       tout le ruban clignote vite en rouge
 #   nettoyage    petit train violet qui tourne le long du ruban
 #
 # Pour changer un effet ou une couleur : modifier seulement couleurs() ci-dessous.
 # couleurs() ne touche à aucune broche : elle renvoie la liste des couleurs, donc elle se teste sur PC.
-# La luminosité est limitée (config.LED_LUMINOSITE) : 26 LED en blanc pleine puissance tirent plus de 1,5 A.
+# La luminosité est limitée (config.LED_LUMINOSITE) : 19 LED en blanc pleine puissance tirent plus de 1,1 A.
 import asyncio
 
 from app import config, horloge, sequenceur

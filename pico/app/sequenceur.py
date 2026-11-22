@@ -1,4 +1,6 @@
-# US3.3 – Séquenceur de recette : verse les ingrédients un par un, sans bloquer le serveur web.
+# US3.3 – Séquenceur de recette : verse les ingrédients sans bloquer le serveur web.
+# US3.6 : par défaut les pompes versent EN MÊME TEMPS (config.SERVICE_PARALLELE), avec des départs décalés ;
+# avec SERVICE_PARALLELE = False, retour au mode « une pompe à la fois ».
 #
 # Une seule préparation à la fois, quelle que soit l'origine de la commande (téléphone, plus tard écran et boutons).
 # Machine à états :  attente -> en_cours -> termine | erreur   (puis retour à « attente » avec acquitter()).
@@ -8,7 +10,7 @@
 # ma_fonction(etat) reçoit le dictionnaire d'état à chaque changement (la LED fait déjà comme ça).
 import asyncio
 
-from app import horloge, ingredients, pompes
+from app import config, erreurs, historique, horloge, ingredients, pompes, verre
 
 ATTENTE = "attente"
 EN_COURS = "en_cours"
@@ -69,7 +71,7 @@ def planifier(recette, recipients):
 def lancer(plan, mode, titre, conseil):
     global _tache, _numero
     if occupe():
-        raise Occupe("Une préparation est déjà en cours.")
+        raise Occupe(erreurs.texte("occupe"))
     _numero += 1
     _maj(etat=EN_COURS, mode=mode, titre=titre, etape=0, etapes=len(plan), pct=0, message="Démarrage", conseil=[])
     _tache = asyncio.create_task(_executer(plan, conseil, _numero))
@@ -78,8 +80,9 @@ def lancer(plan, mode, titre, conseil):
 def servir(recette, recipients):
     """Démarre un cocktail. Lève Occupe ou ValueError (rien n'est lancé dans ce cas)."""
     if occupe():
-        raise Occupe("Une préparation est déjà en cours.")
+        raise Occupe(erreurs.texte("occupe"))
     plan = planifier(recette, recipients)
+    verre.verifier()             # US6.2 : pas de verre sous le bec
     lancer(plan, "cocktail", recette["nom"], list(recette.get("conseil", [])))
 
 
@@ -90,35 +93,77 @@ def arreter():
         return False
     if _tache is not None:
         _tache.cancel()
-    _maj(etat=ERREUR, message="Arrêté")
+    _maj(etat=ERREUR, message=erreurs.texte("arret"))
     return True
 
 
+def _calendrier(plan):
+    """Pour chaque étape : (début, fin) en secondes depuis le départ. Parallèle : départs décalés ; sinon à la suite."""
+    debuts = []
+    t = 0.0
+    for i, etape in enumerate(plan):
+        if config.SERVICE_PARALLELE:
+            debuts.append(i * config.DEPART_DECALE_S)
+        else:
+            debuts.append(t)
+            t += etape[2]
+    return debuts, [debuts[i] + plan[i][2] for i in range(len(plan))]
+
+
 async def _executer(plan, conseil, numero):
-    total = sum(etape[2] for etape in plan)
-    fait = 0.0
+    debuts, fins = _calendrier(plan)
+    total = max(fins) if fins else 0.0
+    statut = [0] * len(plan)          # 0 = en attente, 1 = en marche, 2 = terminée
+    t0 = horloge.ms()
+    ecoule = 0.0
+    sans_verre = 0
+    derniere = None
+    mode = _etat["mode"]
+    controle_verre = verre.actif() and mode == "cocktail"
     try:
-        for i, (n, ml, duree, nom) in enumerate(plan):
-            _maj(etape=i + 1, message="{} : {} ml".format(nom, ml))
-            pompes.pump_on(n)
-            debut = horloge.ms()
-            while True:
-                ecoule = horloge.ecart(horloge.ms(), debut) / 1000
-                if ecoule >= duree:
-                    break
-                _maj(pct=int(100 * (fait + ecoule) / total))
-                await asyncio.sleep(min(0.25, duree - ecoule))
-            pompes.pump_off(n)
-            fait += duree
+        while True:
+            ecoule = horloge.ecart(horloge.ms(), t0) / 1000
+            for i, (n, ml, duree, nom) in enumerate(plan):
+                if statut[i] == 0 and ecoule >= debuts[i]:
+                    derniere = n
+                    pompes.pump_on(n)
+                    statut[i] = 1
+                if statut[i] == 1 and ecoule >= fins[i]:
+                    pompes.pump_off(n)
+                    statut[i] = 2
+            if all(x == 2 for x in statut):
+                break
+            if controle_verre:                       # US6.2 : verre retiré en cours de route
+                sans_verre = 0 if verre.present() else sans_verre + 1
+                if sans_verre >= 3:
+                    raise RuntimeError(erreurs.texte("verre_retire"))
+            marche = [plan[i] for i in range(len(plan)) if statut[i] == 1]
+            if len(marche) == 1:
+                message = "{} : {} ml".format(marche[0][3], marche[0][1])
+            else:
+                message = ", ".join(x[3] for x in marche)
+            _maj(etape=min(sum(1 for x in statut if x == 2) + 1, len(plan)), message=message,
+                 pct=int(100 * min(ecoule, total) / total) if total else 100)
+            prochain = min([debuts[i] for i in range(len(plan)) if statut[i] == 0] +
+                           [fins[i] for i in range(len(plan)) if statut[i] == 1])
+            await asyncio.sleep(max(0.01, min(0.25, prochain - ecoule)))
         _maj(etat=TERMINE, pct=100, message="Verre prêt" if _etat["mode"] == "cocktail" else "Rinçage terminé",
              conseil=conseil)
+        if mode == "cocktail":
+            try:
+                historique.enregistrer(_etat["titre"])      # US6.4
+            except Exception as e:
+                print("historique non enregistré :", e)
     except asyncio.CancelledError:
         if numero == _numero:
-            _maj(etat=ERREUR, message="Arrêté")
+            _maj(etat=ERREUR, message=erreurs.texte("arret"))
         raise
+    except RuntimeError as e:
+        if numero == _numero:
+            _maj(etat=ERREUR, message=str(e))
     except Exception as e:
         if numero == _numero:
-            _maj(etat=ERREUR, message="Erreur : {}".format(e))
+            actives = [plan[i][0] for i in range(len(plan)) if statut[i] == 1]
+            _maj(etat=ERREUR, message=erreurs.texte("pompe", n=actives[0] if actives else derniere, detail=e))
     finally:
-        if numero == _numero:
-            pompes.stop_all()
+        pompes.stop_all()

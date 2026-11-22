@@ -1,6 +1,6 @@
 # US3.1 – Piloter les 4 pompes, par le module 4 relais.
 #
-# Pompe n (1 à 4) = relais n = broche config.PINS_RELAIS[n-1] (GP2 à GP5).
+# Pompe n (1 à 4) = relais n = broche config.PINS_RELAIS[n-1] (GP10 à GP13).
 # Notre module est « actif bas » : broche à 0 V = relais collé = pompe qui tourne.
 # Les broches sont créées déjà à l'état « arrêt », pour que les relais ne claquent pas au démarrage.
 #

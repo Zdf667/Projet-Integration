@@ -3,6 +3,7 @@
 #   routes_user.py        mode utilisateur       /  /cocktail  /servir                      (US4.1, US2.3)
 #   routes_suivi.py       suivi de préparation   /suivi  /status  /arreter  /acquitter       (US4.2)
 #   routes_admin.py       mode admin (PIN)       /connexion  /deconnexion  /admin  /ingredients  /admin/pin   (US4.3)
+#   routes_stats.py       statistiques, verre    /admin/stats  /admin/verre                  (US6.4, US6.2)
 #   routes_nettoyage.py   nettoyage guidé        /admin/nettoyage                            (US5.1)
 #   routes_wifi.py        modes réseau           /admin/wifi  /admin/wifi/oublier            (US4.6)
 #
@@ -13,11 +14,11 @@ import gc
 import os
 
 from app import catalogue, config, ingredients, pompes
-from app import routes_admin, routes_nettoyage, routes_suivi, routes_user, routes_wifi
+from app import routes_admin, routes_nettoyage, routes_stats, routes_suivi, routes_user, routes_wifi
 from app.http_outils import repondre, reponse_json
 
 # Ordre d'essai : le premier module qui reconnaît l'adresse répond.
-ROUTES = (routes_user, routes_suivi, routes_admin, routes_nettoyage, routes_wifi)
+ROUTES = (routes_user, routes_suivi, routes_admin, routes_stats, routes_nettoyage, routes_wifi)
 
 _STATIQUE = {
     "style.css": "text/css; charset=utf-8",
