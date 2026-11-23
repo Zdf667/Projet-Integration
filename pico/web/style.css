@@ -266,3 +266,6 @@ form.reseau {
 }
 form.reseau span { flex: 1; font-weight: 700; overflow-wrap: anywhere; }
 form.reseau button { width: auto; padding: .4rem .8rem; font-size: .9rem; }
+
+/* --- cocktail non réalisable (US2.6) ---------------------------------------------------- */
+.carte.indispo { opacity: .6; filter: grayscale(.6); box-shadow: 3px 3px 0 var(--encre); }

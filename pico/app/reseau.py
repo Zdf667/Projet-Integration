@@ -5,7 +5,7 @@
 import os
 import time
 
-from app import config, storage
+from app import config, erreurs, storage
 
 try:
     import network
@@ -14,6 +14,7 @@ except ImportError:          # tests sur PC
 
 # mode : "client", "ap" ou "aucun" ; raison : pourquoi on est en point d'accès
 _info = {"mode": "aucun", "ssid": "", "ip": "", "raison": ""}
+_echecs = []          # US4.4 : messages clairs des réseaux qui n'ont pas répondu au démarrage
 
 
 def info():
@@ -113,6 +114,19 @@ def _point_acces(raison):
     return _info["ip"]
 
 
+def _motif_echec(sta, ssid):
+    """US4.4 – Pourquoi la connexion a échoué : réseau introuvable, mot de passe refusé ou pas de réponse."""
+    try:
+        statut = sta.status()
+    except Exception:
+        statut = None
+    if statut == getattr(network, "STAT_NO_AP_FOUND", -2):
+        return erreurs.texte("wifi_introuvable", ssid=ssid)
+    if statut == getattr(network, "STAT_WRONG_PASSWORD", -3):
+        return erreurs.texte("wifi_mdp", ssid=ssid)
+    return erreurs.texte("wifi_sans_reponse", ssid=ssid)
+
+
 def _client(cfg):
     sta = network.WLAN(network.STA_IF)
     sta.active(True)
@@ -123,6 +137,7 @@ def _client(cfg):
             print("Connecté au Wi-Fi", cfg["ssid"], sta.ifconfig()[0])
             return _info["ip"]
         time.sleep(0.1)
+    _echecs.append(_motif_echec(sta, cfg["ssid"]))
     sta.disconnect()
     return None
 
@@ -154,7 +169,7 @@ def demarrer():
         if ip:
             return ip
     noms = ", ".join(r["ssid"] for r in reseaux)
-    return _point_acces("aucun réseau enregistré ({}) n'a répondu (éteint, mot de passe faux ou trop loin)".format(noms))
+    return _point_acces(" ".join(_echecs) or "aucun réseau enregistré ({}) n'a répondu".format(noms))
 
 
 def adresse():
