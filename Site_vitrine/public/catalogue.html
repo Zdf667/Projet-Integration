@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catalogue & Mise à jour - OneCocktail</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: { DEFAULT: '#d4af37', hover: '#b5952f' },
+                        dark: { DEFAULT: '#0a0a0a', card: '#141414' }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body class="antialiased min-h-screen flex flex-col relative overflow-x-hidden bg-[#0a0a0a] text-gray-100">
+
+    <!-- Barre de Navigation -->
+    <nav class="fixed w-full z-50 glass-effect border-b border-gold/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <a href="./index.html" class="flex items-center gap-4">
+                    <img src="./assets/logo.png" alt="OneCocktail Logo" class="h-12 w-auto logo-glow">
+                    <span class="font-cinzel text-2xl font-bold text-gold tracking-wider">OneCocktail</span>
+                </a>
+                
+                <div class="flex items-center gap-6">
+                    <div class="hidden md:flex items-center gap-6">
+                        <a href="./index.html" class="text-gray-300 hover:text-gold transition text-sm font-medium">← Retour à la vitrine</a>
+                        <span class="text-gold font-bold text-sm border-b-2 border-gold pb-1">Ajouter des cocktails</span>
+                    </div>
+
+                    <a href="#selection-panier" class="relative group bg-gold/10 border border-gold/50 px-4 py-2 rounded-lg hover:bg-gold/20 transition">
+                        🛒 <span class="text-gold font-bold hidden sm:inline">Ma Sélection</span>
+                        <span id="compteur-panier" class="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">0</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+        
+        <!-- En-tête de la page Catalogue -->
+        <div class="text-center mb-12 fade-in-up">
+            <h1 class="text-3xl md:text-5xl font-bold font-cinzel mb-4">
+                Enrichissez votre <span class="text-gold">Machine OneCocktail</span>
+            </h1>
+            <p class="text-gray-400 max-w-2xl mx-auto mb-8">
+                Ajoutez les recettes souhaitées à votre sélection ci-dessous, puis téléchargez le fichier JSON pour l'importer sur votre machine.
+            </p>
+
+            <!-- Barre de recherche rapide -->
+            <div class="max-w-md mx-auto">
+                <input type="text" id="barre-recherche" oninput="filtrerCocktails()" placeholder="Rechercher un cocktail ou un ingrédient (ex: Rhum, Mojito...)" 
+                       class="w-full bg-white/5 border border-gold/30 rounded-xl px-5 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-gold">
+            </div>
+        </div>
+
+        <!-- Grille des Cocktails disponibles -->
+        <div id="cocktail-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-24">
+            <!-- Injecté par JavaScript -->
+        </div>
+
+        <!-- Section Panier / Liste d'ajout -->
+        <div id="selection-panier" class="max-w-5xl mx-auto scroll-mt-28">
+            <div class="glass-effect rounded-2xl p-8 border border-gold/40 shadow-[0_0_25px_rgba(212,175,55,0.12)]">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gold/20 pb-6 mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold font-cinzel text-white">
+                            Cocktails à ajouter (<span id="titre-compteur-panier" class="text-gold">0</span>)
+                        </h2>
+                        <p class="text-xs text-gray-400 mt-1">Ce fichier sera comparé automatiquement avec la base de données de votre Pico.</p>
+                    </div>
+                    
+                    <div class="flex items-center gap-3 w-full sm:w-auto">
+                        <button onclick="viderPanier()" id="btn-vider" class="hidden text-xs text-gray-400 hover:text-red-400 underline px-2">
+                            Tout vider
+                        </button>
+                        <button id="btn-generer" onclick="genererFichierJSON()" class="w-full sm:w-auto bg-gold text-dark font-bold px-6 py-3 rounded-xl hover:bg-gold-hover transition opacity-50 cursor-not-allowed" disabled>
+                            📥 Télécharger le JSON
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="liste-panier" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    <p class="text-gray-400 italic col-span-full text-center py-8">Votre liste d'ajout est vide. Cliquez sur "+ Ajouter" sur les cartes ci-dessus.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="glass-effect py-8 border-t border-gold/20 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <img src="./assets/logo.png" alt="OneCocktail" class="h-8 w-auto">
+                <span class="font-cinzel text-gold font-bold">OneCocktail</span>
+            </div>
+            <a href="./index.html" class="text-gray-400 hover:text-gold text-sm">Retour à l'accueil</a>
+        </div>
+    </footer>
+
+    <script>
+        let catalogueGlobal = [];
+        // Chargement du panier depuis le localStorage pour persister entre les pages
+        let panier = JSON.parse(localStorage.getItem('onecocktail_panier')) || [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            mettreAJourAffichagePanier();
+            await chargerCatalogue();
+        });
+
+        async function chargerCatalogue() {
+            const grid = document.getElementById('cocktail-grid');
+            try {
+                const response = await fetch('./api/catalog.json');
+                if (!response.ok) throw new Error("Fichier introuvable");
+                
+                const data = await response.json();
+                catalogueGlobal = data.recettes || [];
+                afficherGrille(catalogueGlobal);
+            } catch (error) {
+                console.error("Erreur:", error);
+                grid.innerHTML = '<p class="text-red-400 col-span-full text-center">Impossible de charger le fichier catalog.json.</p>';
+            }
+        }
+
+        function afficherGrille(listeRecettes) {
+            const grid = document.getElementById('cocktail-grid');
+            grid.innerHTML = '';
+
+            if (listeRecettes.length === 0) {
+                grid.innerHTML = '<p class="text-gray-400 col-span-full text-center py-8">Aucune recette ne correspond à votre recherche.</p>';
+                return;
+            }
+
+            listeRecettes.forEach(cocktail => {
+                const estDejaSelectionne = panier.some(item => item.nom === cocktail.nom);
+                const card = document.createElement('div');
+                card.className = 'glass-effect rounded-xl p-5 border border-white/10 hover:border-gold/40 transition flex flex-col justify-between';
+                
+                const ingredientsHtml = cocktail.ingredients
+                    .map(ing => `<span class="block text-gray-300 text-xs">• ${ing.ingredient} <span class="text-gray-500">(${ing.ml}ml)</span></span>`)
+                    .join('');
+
+                card.innerHTML = `
+                    <div>
+                        <h4 class="font-cinzel text-lg font-bold text-gold mb-3 border-b border-white/10 pb-2">${cocktail.nom}</h4>
+                        <div class="space-y-1 mb-4">${ingredientsHtml}</div>
+                    </div>
+                    <button onclick="ajouterAuPanier('${cocktail.nom.replace(/'/g, "\\'")}')" 
+                            class="w-full mt-2 font-semibold rounded-lg py-2.5 text-sm transition ${estDejaSelectionne ? 'bg-green-900/40 text-green-400 border border-green-500/40 cursor-default' : 'bg-white/10 hover:bg-gold hover:text-dark text-gold border border-gold/30'}">
+                        ${estDejaSelectionne ? '✓ Dans votre sélection' : '+ Ajouter à la liste'}
+                    </button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filtrerCocktails() {
+            const recherche = document.getElementById('barre-recherche').value.toLowerCase();
+            const filtres = catalogueGlobal.filter(cocktail => {
+                const matchNom = cocktail.nom.toLowerCase().includes(recherche);
+                const matchIngredient = cocktail.ingredients.some(ing => ing.ingredient.toLowerCase().includes(recherche));
+                return matchNom || matchIngredient;
+            });
+            afficherGrille(filtres);
+        }
+
+        function sauvegarderPanier() {
+            localStorage.setItem('onecocktail_panier', JSON.stringify(panier));
+            mettreAJourAffichagePanier();
+            filtrerCocktails(); // Met à jour l'état visuel des boutons sur les cartes
+        }
+
+        function ajouterAuPanier(nomCocktail) {
+            const cocktail = catalogueGlobal.find(c => c.nom === nomCocktail);
+            if (!cocktail || panier.some(item => item.nom === cocktail.nom)) return;
+            
+            panier.push(cocktail);
+            sauvegarderPanier();
+        }
+
+        function retirerDuPanier(nomCocktail) {
+            panier = panier.filter(c => c.nom !== nomCocktail);
+            sauvegarderPanier();
+        }
+
+        function viderPanier() {
+            panier = [];
+            sauvegarderPanier();
+        }
+
+        function mettreAJourAffichagePanier() {
+            const listePanier = document.getElementById('liste-panier');
+            const compteurs = [document.getElementById('compteur-panier'), document.getElementById('titre-compteur-panier')];
+            const btnGenerer = document.getElementById('btn-generer');
+            const btnVider = document.getElementById('btn-vider');
+
+            compteurs.forEach(el => el.innerText = panier.length);
+
+            if (panier.length > 0) {
+                btnGenerer.disabled = false;
+                btnGenerer.classList.remove('opacity-50', 'cursor-not-allowed');
+                btnVider.classList.remove('hidden');
+            } else {
+                btnGenerer.disabled = true;
+                btnGenerer.classList.add('opacity-50', 'cursor-not-allowed');
+                btnVider.classList.add('hidden');
+            }
+
+            if (panier.length === 0) {
+                listePanier.innerHTML = '<p class="text-gray-400 italic col-span-full text-center py-8">Votre liste d\'ajout est vide. Cliquez sur "+ Ajouter à la liste" sur les cartes ci-dessus.</p>';
+                return;
+            }
+
+            listePanier.innerHTML = '';
+            panier.forEach(cocktail => {
+                const item = document.createElement('div');
+                item.className = 'bg-black/50 border border-gold/20 rounded-xl p-4 flex justify-between items-center';
+                item.innerHTML = `
+                    <div>
+                        <span class="font-cinzel text-white font-bold block">${cocktail.nom}</span>
+                        <span class="text-xs text-gray-500">${cocktail.ingredients.length} ingrédients</span>
+                    </div>
+                    <button onclick="retirerDuPanier('${cocktail.nom.replace(/'/g, "\\'")}')" class="text-red-400 hover:text-red-300 text-xs bg-red-500/10 border border-red-500/20 px-3 py-1.5 rounded-lg transition">
+                        Retirer
+                    </button>
+                `;
+                listePanier.appendChild(item);
+            });
+        }
+
+        function genererFichierJSON() {
+            if (panier.length === 0) return;
+
+            const ingredientsUniques = new Set();
+            panier.forEach(cocktail => {
+                cocktail.ingredients.forEach(ing => {
+                    ingredientsUniques.add(ing.ingredient);
+                });
+            });
+
+            // Format strict identique à celui de ta machine Pico
+            const updateData = {
+                version: 3,
+                ingredients: Array.from(ingredientsUniques),
+                recettes: panier
+            };
+
+            const jsonString = JSON.stringify(updateData, null, 2);
+            const blob = new Blob([jsonString], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'onecocktail_update.json';
+            document.body.appendChild(a);
+            a.click();
+            
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
