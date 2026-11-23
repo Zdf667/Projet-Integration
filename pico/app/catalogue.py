@@ -4,6 +4,13 @@ import gc
 import json
 from app import config, recettes, storage
 
+try:
+    import network
+    import urequests
+except ImportError:
+    network = None
+    urequests = None
+    
 _etat = {"data": None, "erreur": None}
 
 
