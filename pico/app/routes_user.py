@@ -11,7 +11,8 @@ async def traiter(w, methode, chemin, requete, corps, cookie):
             await repondre(w, 405, "Méthode non autorisée")
         else:
             await repondre(w, 200, pages_user.page_utilisateur(
-                ingredients.charger(), data, catalogue.erreur(), etat=sequenceur.etat()))
+                ingredients.charger(), data, catalogue.erreur(), etat=sequenceur.etat(),
+                filtre=parse_form(requete).get("ingredient", "")))
         return True
 
     if chemin == "/cocktail":
