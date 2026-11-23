@@ -67,7 +67,7 @@ async def _lire(reader):
             longueur = int(bas.split(":", 1)[1].strip())
         elif bas.startswith("cookie:"):
             cookie = texte.split(":", 1)[1].strip()
-    if longueur > 4096:
+    if longueur > 16383:
         raise ValueError("corps trop grand")
     corps = await reader.readexactly(longueur) if longueur else b""
     return morceaux[0], morceaux[1], corps.decode(), cookie, cookie

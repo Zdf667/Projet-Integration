@@ -1,7 +1,9 @@
 # MODE ADMINISTRATEUR protégé par un code PIN – US4.3 (+ choix des ingrédients, US1.1 / US1.2).
-#   GET/POST /connexion   saisie du code PIN         GET /deconnexion
-#   GET  /admin           choix de l'ingrédient de chaque récipient      POST /ingredients
-#   GET/POST /admin/pin   changer le code PIN
+#   GET/POST /connexion           saisie du code PIN         GET /deconnexion
+#   GET  /admin                   choix de l'ingrédient de chaque récipient      POST /ingredients
+#   POST /admin/synchroniser      synchronisation manuelle avec le site OneCocktail
+#   POST /admin/importer          importation manuelle de recettes depuis un fichier JSON
+#   GET/POST /admin/pin           changer le code PIN
 # Le nettoyage (/admin/nettoyage) et le Wi-Fi (/admin/wifi) sont dans routes_nettoyage.py et routes_wifi.py.
 from app import admin, catalogue, config, ingredients, pages_admin, recettes, sequenceur
 from app.http_outils import exiger_admin, parse_form, repondre, rediriger
@@ -64,6 +66,43 @@ async def traiter(w, methode, chemin, requete, corps, cookie):
             await repondre(w, 400, pages_admin.page_admin(choix, data, erreur_recettes, erreur=str(e)))
         else:
             await rediriger(w, "/admin?ok=1")
+        return True
+
+    if chemin == "/admin/synchroniser":
+        if not await exiger_admin(w, cookie):
+            return True
+        if not post:
+            await repondre(w, 405, "Méthode non autorisée")
+            return True
+        recipients = ingredients.charger()
+        if sequenceur.occupe():
+            await repondre(w, 409, pages_admin.page_admin(recipients, data, erreur_recettes,
+                                                          erreur="Une préparation est en cours : attendez la fin."))
+            return True
+        ajouts = catalogue.synchroniser_cloud()
+        msg = "{} nouvelle(s) recette(s) récupérée(s) depuis OneCocktail.".format(ajouts) if ajouts > 0 else "Catalogue déjà à jour (ou machine hors-ligne)."
+        await repondre(w, 200, pages_admin.page_admin(recipients, catalogue.data(), catalogue.erreur(), message=msg))
+        return True
+
+    if chemin == "/admin/importer":
+        if not await exiger_admin(w, cookie):
+            return True
+        if not post:
+            await repondre(w, 405, "Méthode non autorisée")
+            return True
+        recipients = ingredients.charger()
+        if sequenceur.occupe():
+            await repondre(w, 409, pages_admin.page_admin(recipients, data, erreur_recettes,
+                                                          erreur="Une préparation est en cours : attendez la fin."))
+            return True
+        brut = parse_form(corps).get("json_data", "")
+        try:
+            ajouts = catalogue.importer(brut)
+        except ValueError as e:
+            await repondre(w, 400, pages_admin.page_admin(recipients, data, erreur_recettes, erreur=str(e)))
+        else:
+            msg = "{} nouvelle(s) recette(s) importée(s).".format(ajouts) if ajouts > 0 else "Aucune nouvelle recette (toutes déjà présentes)."
+            await repondre(w, 200, pages_admin.page_admin(recipients, catalogue.data(), catalogue.erreur(), message=msg))
         return True
 
     if chemin == "/admin/pin":

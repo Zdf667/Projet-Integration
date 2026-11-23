@@ -1,4 +1,4 @@
-# US4.3 – Pages du MODE ADMINISTRATEUR : saisie du code PIN, choix des ingrédients, changement de PIN.
+# US4.3 – Pages du MODE ADMINISTRATEUR : saisie du code PIN, choix des ingrédients, sync/import JSON, changement de PIN.
 from app import conseil
 from app.pages import detail, e, fin, haut, total
 
@@ -15,7 +15,7 @@ def page_connexion(erreur=None, bloque=0):
 
 
 def page_admin(selection, data, erreur_recettes=None, erreur=None, message=None):
-    """Choix de l'ingrédient de chaque récipient + toutes les recettes chargées."""
+    """Choix de l'ingrédient de chaque récipient + sync Cloud + import JSON + toutes les recettes chargées."""
     h = haut("admin", message, erreur, erreur_recettes, connecte=True)
 
     if data:
@@ -30,6 +30,28 @@ def page_admin(selection, data, erreur_recettes=None, erreur=None, message=None)
                 h.append('<option value="' + e(nom) + '"' + coche + '>' + e(nom) + '</option>')
             h.append('</select></label>')
         h.append('<button type="submit">Enregistrer</button></form></section>')
+
+        h.append('<section><h2>Mise à jour des recettes</h2>'
+                 '<form class="formulaire" method="post" action="/admin/synchroniser" style="margin-bottom:1.2rem;">'
+                 '<button type="submit">Synchroniser avec le site OneCocktail</button></form>'
+                 '<form id="form-import" class="formulaire" method="post" action="/admin/importer">'
+                 '<label class="champ c0"><span>Ou importer un fichier (.json)</span>'
+                 '<input type="file" id="fichier-json" accept=".json,application/json" required></label>'
+                 '<input type="hidden" name="json_data" id="json-data">'
+                 '<button type="submit">Importer le fichier</button></form>'
+                 '<script>'
+                 'document.getElementById("form-import").addEventListener("submit", function(ev) {'
+                 '  var input = document.getElementById("fichier-json");'
+                 '  if (!input.files.length) return;'
+                 '  ev.preventDefault();'
+                 '  var reader = new FileReader();'
+                 '  reader.onload = function(e) {'
+                 '    document.getElementById("json-data").value = e.target.result;'
+                 '    ev.target.submit();'
+                 '  };'
+                 '  reader.readAsText(input.files[0]);'
+                 '});'
+                 '</script></section>')
 
         h.append('<section><h2>Recettes chargées ({})</h2>'.format(len(data["recettes"])))
         for r in data["recettes"]:

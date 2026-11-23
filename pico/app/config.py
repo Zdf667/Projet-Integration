@@ -58,6 +58,8 @@ BLOCAGE_S = 30                      # durée du blocage
 
 # --- Nettoyage guidé (US5.1) --------------------------------------------------------------
 NETTOYAGE_ML = 60                   # volume pompé dans chaque ligne à chaque rinçage
+#pour site vitrine
+URL_CATALOGUE_CLOUD = "https://zdf667.github.io/Projet-Integration/api/catalog.json"
 
 
 def chemin(nom):
