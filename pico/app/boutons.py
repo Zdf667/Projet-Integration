@@ -6,7 +6,7 @@ except ImportError:
     Pin = None
 
 NOMS = ("haut", "bas", "ok", "retour", "info", "stop")
-PINS_DEFAUT = (9, 10, 11, 12, 13, 14)     
+PINS_DEFAUT = (9, 2, 3, 4, 5, 14)        
 PERIODE_MS = 10                           
 ANTI_REBOND_MS = 30
 REPETITION_DEBUT_MS = 500                
@@ -30,11 +30,21 @@ _boutons = []
 def pins():
     return getattr(config, "PINS_BOUTONS", PINS_DEFAUT)
 
+def _broches_prises():
+    """Broches déjà utilisées ailleurs dans config.py (relais, ruban, HX711) : jamais pour un bouton."""
+    prises = set(getattr(config, "PINS_RELAIS", ()))
+    for nom in ("PIN_LED", "PIN_HX711_DT", "PIN_HX711_SCK"):
+        if hasattr(config, nom):
+            prises.add(getattr(config, nom))
+    return prises
 
 def init():
     """Crée les 6 entrées. Peut être appelée plusieurs fois."""
     if _boutons:
         return
+    conflit = [n for n in pins() if n in _broches_prises()]
+    if conflit:
+        raise ValueError("boutons : broche(s) GP{} déjà utilisée(s) par les relais, le ruban ou le HX711".format(conflit))
     for nom, numero in zip(NOMS, pins()):
         broche = _FausseBroche() if Pin is None else Pin(numero, Pin.IN, Pin.PULL_UP)
         _boutons.append({"nom": nom, "numero": numero, "broche": broche,
