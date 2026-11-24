@@ -273,6 +273,15 @@
         {"ingredient": "Sirop de sucre", "ml": 20}
       ],
       "conseil": ["C'est le test"]
+    },
+    {
+      "nom": "DémoPrésentation",
+      "ingredients": [
+        {"ingredient": "Eau plate", "ml": 160},
+        {"ingredient": "Jus de citron", "ml": 30},
+        {"ingredient": "Sirop de sucre", "ml": 20}
+      ],
+      "conseil": ["C'est la démo de la présentation"]
     }
   ]
 }
