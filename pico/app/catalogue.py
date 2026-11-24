@@ -3,6 +3,7 @@
 import gc
 import json
 from app import config, recettes, storage
+import time
 
 try:
     import network
@@ -126,37 +127,45 @@ def synchroniser_cloud():
     if not url:
         return 0
 
-    gc.collect()
-    reponse = None
-    try:
-        print("Vérification des nouvelles recettes sur :", url)
-        reponse = urequests.get(url)
+    # Laisse 2 secondes au partage de connexion (ex: iPhone) pour stabiliser le routage/DNS
+    time.sleep(2)
 
-        # Suivi manuel si redirection HTTP 301/302
-        if reponse.status_code in (301, 302) and "Location" in reponse.headers:
-            nouvelle_url = reponse.headers["Location"]
-            reponse.close()
-            gc.collect()
-            reponse = urequests.get(nouvelle_url)
-
-        if reponse.status_code == 200:
-            brut = reponse.text
-            reponse.close()
-            reponse = None
-            gc.collect()
-            ajouts = importer(brut)
-            print("Sync Cloud terminée : {} nouvelle(s) recette(s) ajoutée(s).".format(ajouts))
-            return ajouts
-        else:
-            print("Sync Cloud échouée : code HTTP", reponse.status_code)
-            return 0
-    except Exception as e:
-        print("Sync Cloud impossible :", e)
-        return 0
-    finally:
-        if reponse:
-            try:
-                reponse.close()
-            except Exception:
-                pass
+    for tentative in range(2):
         gc.collect()
+        reponse = None
+        try:
+            print("Vérification des nouvelles recettes (essai {}) sur : {}".format(tentative + 1, url))
+            reponse = urequests.get(url)
+
+            # Suivi manuel si redirection HTTP 301/302
+            if reponse.status_code in (301, 302) and "Location" in reponse.headers:
+                nouvelle_url = reponse.headers["Location"]
+                reponse.close()
+                gc.collect()
+                reponse = urequests.get(nouvelle_url)
+
+            if reponse.status_code == 200:
+                brut = reponse.text
+                reponse.close()
+                reponse = None
+                gc.collect()
+                ajouts = importer(brut)
+                print("Sync Cloud terminée : {} nouvelle(s) recette(s) ajoutée(s).".format(ajouts))
+                return ajouts
+            else:
+                print("Sync Cloud échouée : code HTTP", reponse.status_code)
+                return 0
+        except Exception as e:
+            print("Tentative {} échouée : {}".format(tentative + 1, e))
+            if tentative == 0:
+                time.sleep(3)
+        finally:
+            if reponse:
+                try:
+                    reponse.close()
+                except Exception:
+                    pass
+            gc.collect()
+
+    print("Sync Cloud impossible après 2 tentatives.")
+    return 0
