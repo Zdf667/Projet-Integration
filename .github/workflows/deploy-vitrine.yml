@@ -15,7 +15,7 @@ permissions:
 
 concurrency:
   group: "pages"
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   deploy:
@@ -34,6 +34,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: 'Site_vitrine/public'
+          retention-days: 1
 
       - name: Publication sur GitHub Pages
         id: deployment
